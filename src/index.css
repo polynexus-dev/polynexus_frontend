@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #010B33;
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #45C7AC;
+  --color-secondary-foreground: #010B33;
+
+  --color-accent: #E27000;
+  --color-accent-foreground: #ffffff;
+
+  --color-background: #ffffff;
+  --color-foreground: #010B33;
+
+  --color-border: #d8deee;
+  --color-ring: #45C7AC;
+}
+
+@layer base {
+  body {
+    color: var(--color-foreground);
+    background-color: var(--color-background);
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
+  }
+
+  a {
+    color: var(--color-secondary);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+
+  a:hover {
+    color: #35b399; /* slightly darker teal for hover */
+  }
+
+  /* Scroll Reveal Utilities */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-100 { transition-delay: 100ms; }
+  .reveal-delay-200 { transition-delay: 200ms; }
+  .reveal-delay-300 { transition-delay: 300ms; }
+  .reveal-delay-400 { transition-delay: 400ms; }
+}
