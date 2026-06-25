@@ -10,7 +10,7 @@ import viteBridgeMockup from '../assets/vite_bridge.png';
 import heliosMockup from '../assets/helios.png';
 
 export default function Projects() {
-  const [filter, setFilter] = useState<'all' | 'enterprise' | 'logistics' | 'saas'>('all');
+  const [filter, setFilter] = useState<'all' | 'polynexus' | 'custom'>('all');
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function Projects() {
           {
             id: 99901,
             title: 'Mail Service Software',
-            category: 'saas',
+            category: 'polynexus',
             desc: 'High-throughput enterprise mail server software supporting transactional relays and spam-filtering layers.',
             metric: '99.999%',
             metricLabel: 'Uptime Delivery',
@@ -34,7 +34,7 @@ export default function Projects() {
           {
             id: 99902,
             title: 'Pench Milk Delivery System',
-            category: 'logistics',
+            category: 'custom',
             desc: 'Custom route optimization and subscription management system for dairy distribution operations.',
             metric: '10k+ Liters/Day',
             metricLabel: 'Milk Distributed',
@@ -45,7 +45,7 @@ export default function Projects() {
           {
             id: 99903,
             title: 'Enterprise ERP Software',
-            category: 'enterprise',
+            category: 'polynexus',
             desc: 'Modular management tool synchronizing production schedules, ledger accounting, and raw material inventory.',
             metric: '35%',
             metricLabel: 'Operational Savings',
@@ -56,7 +56,7 @@ export default function Projects() {
           {
             id: 99904,
             title: 'Enterprise CRM Software',
-            category: 'enterprise',
+            category: 'polynexus',
             desc: 'Customer relationship platform tracking sales pipelines, support interactions, and agent response latency.',
             metric: '18x',
             metricLabel: 'Sales Conversion',
@@ -67,7 +67,7 @@ export default function Projects() {
           {
             id: 99905,
             title: 'Moto Bee Garage System',
-            category: 'logistics',
+            category: 'custom',
             desc: 'Custom software for garage owners featuring a real-time parts inventory dashboard and mobile app for mechanics.',
             metric: '< 5s',
             metricLabel: 'Dispatch Latency',
@@ -78,7 +78,7 @@ export default function Projects() {
           {
             id: 99909,
             title: 'Campus Flow',
-            category: 'enterprise',
+            category: 'polynexus',
             desc: 'College & School management system managing member directory, student/teacher attendance, lecture schedules, and grading.',
             metric: '99.8%',
             metricLabel: 'Attendance Accuracy',
@@ -111,9 +111,8 @@ export default function Projects() {
         <div className="flex flex-wrap justify-center gap-3 mb-12">
           {([
             { id: 'all', label: 'All Projects' },
-            { id: 'enterprise', label: 'Enterprise Management' },
-            { id: 'logistics', label: 'Custom Operations & Logistics' },
-            { id: 'saas', label: 'Productivity & B2B SaaS' }
+            { id: 'polynexus', label: 'Polynexus Products' },
+            { id: 'custom', label: 'Custom Software' }
           ] as const).map((btn) => (
             <button
               key={btn.id}
@@ -152,7 +151,7 @@ export default function Projects() {
                   {/* Category & Icon */}
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-accent uppercase tracking-wider font-mono">
-                      {project.category}
+                      {project.category === 'polynexus' ? 'Polynexus Product' : project.category === 'custom' ? 'Custom Software' : project.category}
                     </span>
                     <div className="p-2 rounded-lg bg-slate-200/60 text-slate-500 group-hover:text-secondary transition-colors duration-200">
                       <ProjIcon className="w-5 h-5" />

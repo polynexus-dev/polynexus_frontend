@@ -45,7 +45,7 @@ export interface Service {
 export interface Project {
   id?: number;
   title: string;
-  category: 'enterprise' | 'logistics' | 'saas';
+  category: 'polynexus' | 'custom';
   desc: string;
   metric: string;
   metricLabel: string;
@@ -58,6 +58,13 @@ export interface Project {
   results?: string[];
   price?: string;
   price_detail_html?: string;
+  standard_price?: string;
+  standard_original_price?: string;
+  premium_price?: string;
+  premium_original_price?: string;
+  standard_features?: string[];
+  premium_features?: string[];
+  enterprise_features?: string[];
 }
 
 export interface Testimonial {
@@ -430,6 +437,64 @@ export async function updateHeroInfo(data: HeroInfo): Promise<any> {
   if (!response.ok) {
     const err = await response.json();
     throw new Error(err.error || 'Failed to update hero info');
+  }
+  return response.json();
+}
+
+export interface Enquiry {
+  id: number;
+  name: string;
+  email: string;
+  company: string;
+  message: string;
+  created_at: string;
+  replied: boolean;
+  reply_message: string;
+  replied_at: string | null;
+}
+
+export async function createEnquiry(data: { name: string; email: string; company?: string; message: string }): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/api/enquiries/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to submit enquiry');
+  }
+  return response.json();
+}
+
+export async function fetchEnquiries(): Promise<Enquiry[]> {
+  const response = await fetch(`${API_BASE_URL}/api/enquiries`, {
+    headers: getAuthHeaders()
+  });
+  if (!response.ok) throw new Error('Failed to fetch enquiries');
+  return response.json();
+}
+
+export async function deleteEnquiry(id: number): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/api/enquiries/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders()
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to delete enquiry');
+  }
+  return response.json();
+}
+
+export async function replyToEnquiry(id: number, replyMessage: string): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/api/enquiries/${id}/reply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ reply_message: replyMessage })
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to submit reply');
   }
   return response.json();
 }

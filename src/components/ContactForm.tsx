@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Mail, Send, CheckCircle2, Phone, MapPin } from 'lucide-react';
-import { fetchContactInfo, type ContactInfo } from '../api';
+import { fetchContactInfo, createEnquiry, type ContactInfo } from '../api';
 
 export default function ContactForm() {
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
@@ -38,12 +38,17 @@ export default function ContactForm() {
     if (!validate()) return;
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-      setFormData({ name: '', email: '', company: '', message: '' });
-    }, 1500);
+    createEnquiry(formData)
+      .then(() => {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+        setFormData({ name: '', email: '', company: '', message: '' });
+      })
+      .catch((err) => {
+        console.error('Error submitting enquiry:', err);
+        setIsSubmitting(false);
+        setErrors((prev) => ({ ...prev, submit: err.message || 'Failed to transmit specifications. Please try again.' }));
+      });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -207,6 +212,11 @@ export default function ContactForm() {
                   {errors.message && <span className="text-xs text-red-500 mt-1 block">{errors.message}</span>}
                 </div>
 
+                {errors.submit && (
+                  <div className="p-3.5 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-semibold mb-4 animate-in fade-in duration-200">
+                    ⚠️ {errors.submit}
+                  </div>
+                )}
                 <div className="pt-2">
                   <button
                     type="submit"

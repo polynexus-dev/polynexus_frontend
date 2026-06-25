@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Cpu, 
-  Database, 
-  Globe, 
-  FolderGit, 
-  Zap, 
-  Shield, 
-  ExternalLink, 
-  Terminal, 
-  Layers, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  Cpu,
+  Database,
+  Globe,
+  FolderGit,
+  Zap,
+  Shield,
+  ExternalLink,
+  Terminal,
+  Layers,
+  CheckCircle2,
   ArrowRight,
   Code,
   Sparkles,
@@ -20,6 +20,7 @@ import {
 import { fetchProject, type Project } from '../api';
 import Header from './Header';
 import Footer from './Footer';
+import useScrollReveal from '../hooks/useScrollReveal';
 
 // Fallback static project assets
 import cognitiveMockup from '../assets/cognitive_query.png';
@@ -91,7 +92,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99901': {
     id: 99901,
     title: 'Mail Service Software',
-    category: 'saas',
+    category: 'polynexus',
     desc: 'High-throughput enterprise mail server software supporting transactional relays and spam-filtering layers.',
     metric: '99.999%',
     metricLabel: 'Uptime Delivery',
@@ -114,7 +115,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99902': {
     id: 99902,
     title: 'Pench Milk Delivery System',
-    category: 'logistics',
+    category: 'custom',
     desc: 'Custom route optimization and subscription management system for dairy distribution operations.',
     metric: '10k+ Liters/Day',
     metricLabel: 'Milk Distributed',
@@ -137,7 +138,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99903': {
     id: 99903,
     title: 'Enterprise ERP Software',
-    category: 'enterprise',
+    category: 'polynexus',
     desc: 'Modular management tool synchronizing production schedules, ledger accounting, and raw material inventory.',
     metric: '35%',
     metricLabel: 'Operational Savings',
@@ -160,7 +161,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99904': {
     id: 99904,
     title: 'Enterprise CRM Software',
-    category: 'enterprise',
+    category: 'polynexus',
     desc: 'Customer relationship platform tracking sales pipelines, support interactions, and agent response latency.',
     metric: '18x',
     metricLabel: 'Sales Conversion',
@@ -183,7 +184,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99905': {
     id: 99905,
     title: 'Moto Bee Garage System',
-    category: 'logistics',
+    category: 'custom',
     desc: 'Custom software for garage owners featuring a real-time parts inventory dashboard and mobile app for mechanics.',
     metric: '< 5s',
     metricLabel: 'Dispatch Latency',
@@ -206,7 +207,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99906': {
     id: 99906,
     title: 'Cognitive Query API',
-    category: 'saas',
+    category: 'polynexus',
     desc: 'Edge-rendered semantic vector indexing console for search engines.',
     metric: '0.15ms',
     metricLabel: 'Vector Resolution',
@@ -229,7 +230,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99907': {
     id: 99907,
     title: 'Atlas DB Sync Tool',
-    category: 'logistics',
+    category: 'polynexus',
     desc: 'Active-active cloud cluster transactional log synchronizer.',
     metric: '100%',
     metricLabel: 'ACID Consistency',
@@ -252,7 +253,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99908': {
     id: 99908,
     title: 'Aegis Proxy Layer',
-    category: 'enterprise',
+    category: 'polynexus',
     desc: 'Serverless DNS validation and DDOS prevention portal.',
     metric: '48Tbps',
     metricLabel: 'Mitigation Cap',
@@ -275,7 +276,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   '99909': {
     id: 99909,
     title: 'Campus Flow',
-    category: 'enterprise',
+    category: 'polynexus',
     desc: 'College & School management system managing member directory, student/teacher attendance, lecture schedules, and grading.',
     metric: '99.8%',
     metricLabel: 'Attendance Accuracy',
@@ -301,10 +302,13 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  useScrollReveal();
   const [project, setProject] = useState<(Project & { longDesc?: string; benefits?: string[]; results?: string[] }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [cfBilling, setCfBilling] = useState<'monthly' | 'annual'>('monthly');
+  const [cfTab, setCfTab] = useState<'campus' | 'business'>('campus');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -384,8 +388,418 @@ export default function ProjectDetail() {
     );
   }
 
+  const renderCampusFlowPricing = (isModalView = false) => {
+    const isAnnual = cfBilling === 'annual';
+
+    return (
+      <div className={`w-full font-sans bg-slate-50 text-primary rounded-3xl overflow-hidden shadow-xs pb-12 ${isModalView ? '' : 'mt-16 border border-slate-200/80'}`}>
+        {/* HERO */}
+        <section className="bg-primary text-white text-center pt-[72px] px-6 pb-[56px] relative overflow-hidden select-none">
+          <h1 className="text-3xl sm:text-[2.8rem] font-bold tracking-[-0.5px] mb-[14px] leading-tight">Plans & Pricing</h1>
+          <p className="text-[1.1rem] text-slate-300 max-w-[560px] mx-auto mb-8 leading-[1.7]">
+            Pay only for active students, employees, or units you manage. No hidden fees, no vendor lock-in.
+          </p>
+          <div className="inline-flex items-center bg-white/10 rounded-[50px] p-1 gap-1 border border-white/10">
+            <button
+              onClick={() => setCfBilling('monthly')}
+              className={`px-[22px] py-2 rounded-[50px] border-none text-[0.9rem] font-semibold transition-all duration-200 cursor-pointer ${cfBilling === 'monthly' ? 'bg-white text-primary shadow-sm' : 'bg-transparent text-slate-300 hover:text-white'}`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setCfBilling('annual')}
+              className={`px-[22px] py-2 rounded-[50px] border-none text-[0.9rem] font-semibold transition-all duration-200 cursor-pointer flex items-center ${cfBilling === 'annual' ? 'bg-white text-primary shadow-sm' : 'bg-transparent text-slate-300 hover:text-white'}`}
+            >
+              Annual
+              <span className="bg-secondary/15 text-secondary text-[0.72rem] font-bold px-[9px] py-[3px] rounded-[50px] ml-1.5 align-middle">
+                Save ~17%
+              </span>
+            </button>
+          </div>
+        </section>
+
+        {/* SECTION TABS */}
+        <div className="flex justify-center gap-3 pt-10 px-6 pb-0 select-none">
+          <button
+            onClick={() => setCfTab('campus')}
+            className={`px-[28px] py-[9px] rounded-[50px] border-2 text-[0.88rem] font-semibold transition-all duration-200 cursor-pointer ${cfTab === 'campus' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-350'}`}
+          >
+            🎓 Campus Solutions
+          </button>
+          <button
+            onClick={() => setCfTab('business')}
+            className={`px-[28px] py-[9px] rounded-[50px] border-2 text-[0.88rem] font-semibold transition-all duration-200 cursor-pointer ${cfTab === 'business' ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-350'}`}
+          >
+            🏢 Business Solutions
+          </button>
+        </div>
+
+        {/* CAMPUS SECTION */}
+        {cfTab === 'campus' && (
+          <div className="pt-8 px-6 pb-16 animate-in fade-in duration-200">
+            <h2 className="text-center text-[1.5rem] font-bold mb-2 text-primary">Campus Solutions</h2>
+            <p className="text-center text-slate-500 text-[0.95rem] mb-9">Built for colleges and institutions — attendance, operations, and managed mail.</p>
+
+            <div className="flex flex-wrap lg:flex-nowrap justify-center gap-3 lg:gap-2.5 max-w-7xl mx-auto px-2 lg:px-1">
+              {/* Attendance Core */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border border-slate-200 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg">
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">Attendance Core</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">For institutions needing digital attendance only</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '19' : '29'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-450 block mt-0.5">
+                      / student / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹29 / student / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per Student</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Digital attendance tracking</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Student-wise records</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Admin dashboard</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Basic reports & exports</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Onboarding support</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-400 flex items-start gap-1.5 leading-normal"><span className="text-slate-300 text-[0.8rem] flex-shrink-0">✗</span> Mail service</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-400 flex items-start gap-1.5 leading-normal"><span className="text-slate-300 text-[0.8rem] flex-shrink-0">✗</span> Campus operations</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Student Mail */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border border-slate-200 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg">
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">Student Mail</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">Managed email for student communication</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '22' : '29'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-455 block mt-0.5">
+                      / student / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹29 / student / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per Student</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Student mailboxes</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Webmail access</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Account provisioning</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Basic admin controls</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Migration assistance</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-400 flex items-start gap-1.5 leading-normal"><span className="text-slate-300 text-[0.8rem] flex-shrink-0">✗</span> Attendance tracking</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-400 flex items-start gap-1.5 leading-normal"><span className="text-slate-300 text-[0.8rem] flex-shrink-0">✗</span> Priority support</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Campus Suite — POPULAR */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border-2 border-secondary relative transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl shadow-md">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-primary-foreground text-[0.65rem] font-extrabold px-3 py-0.5 rounded-full whitespace-nowrap tracking-wider font-mono">
+                  ⭐ MOST POPULAR
+                </div>
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">Campus Suite</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">Attendance + operations + student mail in one plan</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '34' : '49'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-450 block mt-0.5">
+                      / student / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹49 / student / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-secondary text-primary hover:bg-[#35b399] shadow-md shadow-secondary/15">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per Student</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Attendance Core</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Campus Operations</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Student mail accounts</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Central admin dashboard</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Reports & analytics</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Migration & training</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Optional priority support</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Employee Mail */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border border-slate-200 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg">
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">Employee Mail</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">For faculty and staff communication</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '39' : '49'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-450 block mt-0.5">
+                      / employee / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹49 / employee / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per Employee</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Employee mailboxes</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Business-grade accounts</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Admin provisioning</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Account management</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Migration support</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Standard support</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-400 flex items-start gap-1.5 leading-normal"><span className="text-slate-300 text-[0.8rem] flex-shrink-0">✗</span> Audit logs & compliance</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Admin / HOD Mail */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border border-slate-200 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg">
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">Admin / HOD Mail</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">Priority mail for administrators and HODs</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '55' : '69'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-450 block mt-0.5">
+                      / user / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹69 / user / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per Admin / HOD User</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Priority mailboxes</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Elevated admin controls</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Audit logs</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Archiving & compliance</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Priority support</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Migration & onboarding</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Custom configurations</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Enterprise Band */}
+            <div className="bg-primary text-white rounded-2xl max-w-[820px] mx-auto mt-10 px-9 py-7 flex flex-col md:flex-row items-center justify-between gap-5 flex-wrap border border-slate-200/10">
+              <div>
+                <h3 className="text-[1.1rem] font-bold mb-1">Need a custom campus deployment?</h3>
+                <p className="text-slate-300 text-[0.88rem]">Large institutions, multi-campus setups, and custom integrations — we'll build a plan around you.</p>
+              </div>
+              <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="bg-secondary hover:bg-[#35b399] text-primary px-7 py-2.5 rounded-xl font-bold text-[0.88rem] no-underline whitespace-nowrap transition-colors duration-200">
+                Contact Sales
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* BUSINESS SECTION */}
+        {cfTab === 'business' && (
+          <div className="pt-8 px-6 pb-16 animate-in fade-in duration-200">
+            <h2 className="text-center text-[1.5rem] font-bold mb-2 text-primary">Business Solutions</h2>
+            <p className="text-center text-slate-500 text-[0.95rem] mb-9">Modular tools for logistics, workforce, and customer management.</p>
+
+            <div className="flex flex-wrap lg:flex-nowrap justify-center gap-3 lg:gap-2.5 max-w-7xl mx-auto px-2 lg:px-1">
+              {/* Logistics */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border border-slate-200 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg">
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">Logistics / Live Tracking</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">Real-time tracking for vehicles & delivery staff</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '499' : '599'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-450 block mt-0.5">
+                      / unit / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹599 / unit / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per Vehicle / Staff</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Live GPS tracking</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Route management</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Delivery staff tracking</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Real-time status updates</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Trip history & reports</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Mobile app access</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-400 flex items-start gap-1.5 leading-normal"><span className="text-slate-300 text-[0.8rem] flex-shrink-0">✗</span> CRM integration</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* CRM — POPULAR */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border-2 border-secondary relative transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl shadow-md">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-primary-foreground text-[0.65rem] font-extrabold px-3 py-0.5 rounded-full whitespace-nowrap tracking-wider font-mono">
+                  ⭐ MOST POPULAR
+                </div>
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">CRM</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">Customer relationship & sales pipeline management</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '666' : '799'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-450 block mt-0.5">
+                      / user / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹799 / user / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-secondary text-primary hover:bg-[#35b399] shadow-md shadow-secondary/15">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per User</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Contact & lead management</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Sales pipeline view</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Task & follow-up tracking</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Reports & analytics</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Team collaboration</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Mobile app access</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> API & integrations</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Attendance */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border border-slate-200 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg">
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">Attendance Module</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">Employee attendance tracking for businesses</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '166' : '199'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-450 block mt-0.5">
+                      / employee / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹199 / employee / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per Employee</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Digital attendance</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Leave management</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Shift scheduling</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Admin dashboard</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Attendance reports</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Mobile check-in</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-400 flex items-start gap-1.5 leading-normal"><span className="text-slate-300 text-[0.8rem] flex-shrink-0">✗</span> Payroll integration</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* HRMS */}
+              <div className="bg-white rounded-2xl pt-6 px-4 lg:px-2.5 pb-5 w-full max-w-[260px] lg:w-0 lg:flex-1 border border-slate-200 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg">
+                <div>
+                  <div className="font-bold text-primary text-[0.95rem] lg:text-[0.82rem] mb-1 leading-tight">HRMS</div>
+                  <div className="text-[0.72rem] lg:text-[0.68rem] text-slate-400 mb-4 leading-normal h-[36px] overflow-hidden">Complete HR & employee lifecycle management</div>
+                  <div className="mb-1">
+                    <span className="text-[1.1rem] lg:text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                    <span className="text-3xl lg:text-[1.7rem] font-extrabold text-primary font-sans leading-none">{isAnnual ? '249' : '299'}</span>
+                    <span className="text-[0.72rem] lg:text-[0.62rem] text-slate-450 block mt-0.5">
+                      / employee / month{isAnnual && ' billed annually'}
+                    </span>
+                  </div>
+                  {isAnnual ? (
+                    <div className="text-[0.72rem] lg:text-[0.62rem] text-slate-400 line-through mb-3 h-4">₹299 / employee / month</div>
+                  ) : (
+                    <div className="h-4 mb-3" />
+                  )}
+                  <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2.5 lg:py-2 rounded-xl text-[0.78rem] lg:text-[0.7rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                    Get Started
+                  </a>
+                  <span className="text-[0.68rem] lg:text-[0.6rem] text-slate-500 bg-slate-100 rounded-md px-2 py-0.5 inline-block mb-3.5 font-semibold">Per Employee</span>
+                  <hr className="border-none border-t border-slate-150 mb-3.5" />
+                  <ul className="list-none flex-grow space-y-1.5">
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Employee records</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Leave & attendance</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Payroll management</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Appraisal & reviews</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Document management</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> Role-based access</li>
+                    <li className="text-[0.72rem] lg:text-[0.66rem] text-slate-600 flex items-start gap-1.5 leading-normal"><span className="text-secondary text-[0.8rem] flex-shrink-0">✓</span> HR analytics & reports</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Enterprise Band */}
+            <div className="bg-primary text-white rounded-2xl max-w-[820px] mx-auto mt-10 px-9 py-7 flex flex-col md:flex-row items-center justify-between gap-5 flex-wrap border border-slate-200/10">
+              <div>
+                <h3 className="text-[1.1rem] font-bold mb-1">Building something larger?</h3>
+                <p className="text-slate-300 text-[0.88rem]">Multi-branch businesses, custom workflows, and volume pricing available on request.</p>
+              </div>
+              <a href="/#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="bg-secondary hover:bg-[#35b399] text-primary px-7 py-2.5 rounded-xl font-bold text-[0.88rem] no-underline whitespace-nowrap transition-colors duration-200">
+                Contact Sales
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* FOOTER NOTE */}
+        <div className="text-center text-[0.8rem] text-slate-400 px-6 py-6 pb-12 mt-8 max-w-2xl mx-auto leading-normal">
+          All plans include onboarding support. Setup, migration, training, priority support, archiving, audit logs, and compliance add-ons available based on deployment scope.<br />
+          Pricing varies by user category based on access level, administration needs, and support scope.
+        </div>
+      </div>
+    );
+  };
+
   // Get project icon component
   const ProjIcon = project.icon || Cpu;
+  const isCampusFlow = project.title.toLowerCase().includes('campus flow');
 
   return (
     <div className="min-h-screen bg-slate-50 text-[#010B33] selection:bg-[#45C7AC]/30 selection:text-[#010B33] font-sans antialiased">
@@ -399,10 +813,10 @@ export default function ProjectDetail() {
       </div>
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24">
-        
+
         {/* Back Link */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center gap-2 text-slate-500 hover:text-secondary font-semibold transition-colors duration-200 mb-8 mt-4 group"
         >
           <ArrowLeft className="w-4.5 h-4.5 transition-transform duration-200 group-hover:-translate-x-1" />
@@ -414,7 +828,7 @@ export default function ProjectDetail() {
           <div className="lg:col-span-8">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-accent bg-accent/10 uppercase tracking-wider font-mono mb-4">
               <ProjIcon className="w-3.5 h-3.5" />
-              {project.category}
+              {project.category === 'polynexus' ? 'Polynexus Product' : project.category === 'custom' ? 'Custom Software' : project.category}
             </span>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight tracking-tight">
               {project.title}
@@ -426,7 +840,7 @@ export default function ProjectDetail() {
             {/* Tech badges */}
             <div className="flex flex-wrap gap-2.5 mt-8">
               {project.tech.map((t, idx) => (
-                <span 
+                <span
                   key={idx}
                   className="inline-flex items-center gap-1 text-xs font-mono text-slate-650 bg-white border border-slate-200 shadow-sm px-3.5 py-1.5 rounded-xl"
                 >
@@ -454,10 +868,10 @@ export default function ProjectDetail() {
 
         {/* Primary Case Study Body */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
+
           {/* Detailed Content column */}
           <div className="lg:col-span-7 space-y-12">
-            
+
             {/* Overview Section */}
             <section className="bg-white border border-slate-200/80 rounded-3xl p-8 shadow-sm">
               <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
@@ -466,7 +880,7 @@ export default function ProjectDetail() {
               </h2>
               <div className="text-slate-500 text-sm leading-relaxed space-y-4 font-normal">
                 <p>
-                  {project.longDesc || `This client engagement involved designing, deploying, and optimizing a specialized ${project.category} platform around the specific operational requirements of our partners.`}
+                  {project.longDesc || `This client engagement involved designing, deploying, and optimizing a specialized ${project.category === 'polynexus' ? 'Polynexus Product' : project.category === 'custom' ? 'custom software' : project.category} platform around the specific operational requirements of our partners.`}
                 </p>
                 <p>
                   By deploying a modular microservices framework and integrating real-time telemetry analytics, the software manages transaction paths, validates workflows, and offers deep-dives into execution status without performance bottlenecks.
@@ -517,11 +931,11 @@ export default function ProjectDetail() {
 
           {/* Visual Showcase column (Mockup / Terminal) */}
           <div className="lg:col-span-5 space-y-8">
-            
+
             {/* Project Image Frame */}
             <div className="relative group bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300">
               <div className="absolute inset-0 bg-linear-to-tr from-secondary/5 to-accent/5 opacity-40 pointer-events-none z-10" />
-              
+
               {/* Header simulation bar */}
               <div className="bg-slate-900 border-b border-slate-800/80 px-4 py-3.5 flex items-center justify-between">
                 <div className="flex gap-2">
@@ -537,80 +951,69 @@ export default function ProjectDetail() {
 
               {/* Showcase Image Viewport */}
               <div className="relative aspect-video w-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                <img 
-                  src={project.image} 
-                  alt={project.title} 
+                <img
+                  src={project.image}
+                  alt={project.title}
                   className="w-full h-full object-cover object-top"
                 />
               </div>
             </div>
 
-            {/* Terminal console demo */}
-            {project.file && (
-              <div className="bg-[#030712] border border-slate-850 rounded-3xl overflow-hidden shadow-xl text-left">
-                <div className="bg-slate-950/80 border-b border-slate-900 px-4 py-3 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-500 font-mono flex items-center gap-1.5">
-                    <Terminal className="w-3.5 h-3.5 text-secondary" />
-                    INTEGRATION_CONSOLE
-                  </span>
-                  <span className="text-[9px] text-[#45C7AC] font-mono bg-[#45C7AC]/10 border border-[#45C7AC]/20 px-2 py-0.5 rounded">
-                    Active Relays
-                  </span>
-                </div>
-                <div className="p-5 font-mono text-xs text-slate-350 space-y-4 overflow-x-auto leading-relaxed select-all">
-                  <div>
-                    <span className="text-secondary font-bold">~</span>
-                    <span className="text-slate-100 ml-2">curl -X GET https://api.polynexus.com/v1/relays/{project.file} \</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-450 ml-4">-H "Authorization: Bearer $TOKEN"</span>
-                  </div>
-                  <div className="pt-2 text-[11px] text-[#45C7AC] border-t border-slate-900">
-                    <div>{"{"}</div>
-                    <div className="pl-4">"status": "Relay Operational",</div>
-                    <div className="pl-4">"target": "{project.title}",</div>
-                    <div className="pl-4">"efficiency": "{project.metric}",</div>
-                    <div className="pl-4">"dependencies_met": true</div>
-                    <div>{"}"}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Pricing Section Card */}
-            {project.price && (
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-8 shadow-xs relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[#45C7AC]/10 to-transparent rounded-bl-full pointer-events-none" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono block mb-2">PRICING STRUCTURE</span>
-                
-                <div className="flex items-baseline gap-1.5 mb-4">
-                  <span className="text-3xl font-extrabold text-slate-900 font-mono tracking-tight">{project.price}</span>
-                </div>
-                
-                <p className="text-slate-500 text-xs leading-relaxed mb-6">
-                  Starting base licensing rate. Custom module configurations and scale agreements available.
+            {/* Plans & Pricing Card in Sidebar */}
+            {project.category === 'polynexus' && (
+              <div className="bg-white border border-slate-200 hover:border-secondary/30 shadow-md rounded-3xl p-8 transition-all duration-300">
+                <span className="text-[10px] font-bold text-secondary uppercase tracking-widest font-mono block mb-2">Plans & Pricing</span>
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Flexible licensing models</h3>
+                <p className="text-slate-550 text-xs leading-relaxed mb-6">
+                  Choose the edition that fits your scale. Active subscription plans include standard or priority technical support.
                 </p>
-
-                {project.price_detail_html && (
-                  <button
-                    onClick={() => setIsPricingModalOpen(true)}
-                    className="inline-flex items-center gap-2 justify-center w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-3 rounded-xl transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md"
-                  >
-                    View Detailed Pricing Table
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <div className="space-y-3 mb-8">
+                  {isCampusFlow ? (
+                    <>
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                        <span>🎓 Campus Solutions</span>
+                        <span className="text-slate-900 font-mono font-bold">from ₹19/mo</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                        <span>🏢 Business Solutions</span>
+                        <span className="text-slate-900 font-mono font-bold">from ₹166/mo</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                        <span>Standard Edition</span>
+                        <span className="text-primary font-mono font-bold">₹1249/mo</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                        <span>Premium Edition</span>
+                        <span className="text-primary font-mono font-bold">₹2999/mo</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                        <span>Enterprise Edition</span>
+                        <span className="text-primary font-mono font-bold">Custom Quote</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <button
+                  onClick={() => setIsPricingModalOpen(true)}
+                  className="inline-flex items-center gap-2 justify-center w-full bg-primary hover:bg-slate-900 text-white font-extrabold text-xs py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 cursor-pointer shadow-xs"
+                >
+                  View All Pricing Plans
+                  <ArrowRight className="w-4 h-4 text-secondary" />
+                </button>
               </div>
             )}
 
             {/* Inquire CTA box */}
-            <div className="bg-gradient-to-tr from-[#010B33] to-slate-900 border border-slate-850 rounded-3xl p-8 shadow-xl text-white">
+            <div className="bg-linear-to-tr from-primary to-slate-900 border border-slate-850 rounded-3xl p-8 shadow-xl text-white">
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest font-mono block mb-2">Build Your Vision</span>
               <h3 className="text-xl font-bold mb-4">Interested in acquiring or custom implementing?</h3>
               <p className="text-slate-400 text-xs leading-relaxed mb-6">
                 Let's discuss how Polynexus engineering frameworks can optimize your operations or talk about licensing/acquiring this software product for your organization.
               </p>
-              <a 
+              <a
                 href="/#contact"
                 className="inline-flex items-center gap-2 justify-center w-full bg-secondary hover:bg-[#35b399] text-primary font-extrabold text-sm py-3.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
               >
@@ -623,45 +1026,392 @@ export default function ProjectDetail() {
 
         </div>
 
+        {/* 3-Tier Pricing Section */}
+        {project.category === 'polynexus' && (
+          isCampusFlow ? renderCampusFlowPricing(false) : (
+            <div className="mt-16 pt-16 border-t border-slate-200/80 reveal">
+              {/* Header + Country Selector */}
+              <div className="flex flex-col sm:flex-row justify-between items-center max-w-6xl mx-auto mb-10 px-4 gap-4">
+                <div className="text-left max-w-xl">
+                  <span className="text-sm font-bold text-secondary uppercase tracking-wider">Plans & Pricing</span>
+                  <h2 className="text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">Flexible licensing models</h2>
+                </div>
+                <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors cursor-pointer select-none">
+                  <span className="text-sm">🇮🇳</span>
+                  <span>India</span>
+                  <span className="text-[8px] text-slate-450 ml-1">▼</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto font-sans">
+
+                {/* Joined Container: Standard & Premium */}
+                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-3xl grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-150 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+
+                  {/* Standard Edition */}
+                  <div className="p-8 flex flex-col justify-between hover:bg-slate-50/20 transition-colors duration-200">
+                    <div>
+                      <div className="text-center pb-6 border-b border-slate-100 mb-6">
+                        <span className="text-[11px] font-bold text-slate-800 uppercase tracking-widest font-mono block mb-4">STANDARD</span>
+
+                        <div className="flex flex-col items-center justify-center mb-1">
+                          <span className="text-slate-400 text-xs font-semibold line-through tracking-tight">₹{project.standard_original_price || '1499'}</span>
+                          <div className="flex items-start text-slate-900 tracking-tight font-sans mt-0.5">
+                            <span className="text-xl font-bold mt-1 mr-0.5">₹</span>
+                            <span className="text-5xl font-extrabold tracking-tighter">{project.standard_price || '1249'}</span>
+                          </div>
+                        </div>
+
+                        <span className="text-[10px] text-slate-500 font-bold block leading-relaxed mt-1">per Organization per Month</span>
+                        <span className="text-[9px] text-slate-400 font-medium block mt-0.5">(Billed annually)</span>
+                      </div>
+
+                      <p className="text-slate-650 text-xs text-center leading-relaxed mb-6 px-4">
+                        Best suited for businesses with <span className="font-bold text-slate-850">one time billing</span> requirements
+                      </p>
+
+                      <a
+                        href="/#contact"
+                        className="block text-center w-full bg-secondary hover:bg-[#35b399] text-primary font-extrabold text-xs py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-secondary/10 mb-8 tracking-wide"
+                      >
+                        Start your 14-day free trial
+                      </a>
+
+                      <ul className="space-y-4">
+                        {(project.standard_features && project.standard_features.length > 0 ? project.standard_features : [
+                          'Create quotes and GST compliant invoices',
+                          'Customize for local languages and tax laws',
+                          'Multi-user access for up to 3 users',
+                          'Handle multi-currency transactions',
+                          'Set up automated payment reminders',
+                          'Manage projects & timesheets',
+                          'Enable self-service customer portal',
+                          'Customize your transaction templates'
+                        ]).map((feat, idx) => (
+                          <li key={idx} className="flex gap-3 items-start text-slate-650 text-xs leading-normal">
+                            <span className="text-slate-800 text-[10px] font-extrabold mt-0.5 select-none">✓</span>
+                            <span>{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Premium Edition */}
+                  <div className="p-8 flex flex-col justify-between hover:bg-slate-50/20 transition-colors duration-200">
+                    <div>
+                      <div className="text-center pb-6 border-b border-slate-100 mb-6">
+                        <span className="text-[11px] font-bold text-slate-800 uppercase tracking-widest font-mono block mb-4">PREMIUM</span>
+
+                        <div className="flex flex-col items-center justify-center mb-1">
+                          <span className="text-slate-400 text-xs font-semibold line-through tracking-tight">₹{project.premium_original_price || '3499'}</span>
+                          <div className="flex items-start text-slate-900 tracking-tight font-sans mt-0.5">
+                            <span className="text-xl font-bold mt-1 mr-0.5">₹</span>
+                            <span className="text-5xl font-extrabold tracking-tighter">{project.premium_price || '2999'}</span>
+                          </div>
+                        </div>
+
+                        <span className="text-[10px] text-slate-500 font-bold block leading-relaxed mt-1">per Organization per Month</span>
+                        <span className="text-[9px] text-slate-400 font-medium block mt-0.5">(Billed annually)</span>
+                      </div>
+
+                      <p className="text-slate-650 text-xs text-center leading-relaxed mb-6 px-4">
+                        Best suited for businesses with <span className="font-bold text-slate-850">one time and subscription billing</span> requirements
+                      </p>
+
+                      <a
+                        href="/#contact"
+                        className="block text-center w-full bg-secondary hover:bg-[#35b399] text-primary font-extrabold text-xs py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-secondary/10 mb-8 tracking-wide"
+                      >
+                        Start your 14-day free trial
+                      </a>
+
+                      <ul className="space-y-4">
+                        {(project.premium_features && project.premium_features.length > 0 ? project.premium_features : [
+                          'Includes everything in Standard +',
+                          'Manage subscription billing',
+                          'Multi-user access for up to 10 users',
+                          'Use hosted payment pages',
+                          'Automate billing for usage-based pricing models',
+                          'Manage in-app purchases'
+                        ]).map((feat, idx) => {
+                          const isHeader = idx === 0 && feat.toLowerCase().includes('everything in');
+                          return (
+                            <li key={idx} className="flex gap-3 items-start text-slate-650 text-xs leading-normal">
+                              <span className="text-slate-800 text-[10px] font-extrabold mt-0.5 select-none">✓</span>
+                              <span className={isHeader ? "font-bold text-slate-900" : ""}>{feat}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Enterprise Edition Card */}
+                <div className="lg:col-span-1 bg-white border border-slate-200 rounded-3xl p-8 hover:shadow-xl hover:border-slate-300 transition-all duration-300 flex flex-col justify-between relative overflow-hidden pt-12 shadow-xs">
+                  {/* Thick top bar banner */}
+                  <div className="absolute top-0 left-0 right-0 h-[6px] bg-primary" />
+
+                  <div>
+                    <div className="text-center pb-6 border-b border-slate-100 mb-6">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono block mb-3">ENTERPRISE EDITION</span>
+                      <h3 className="text-3xl font-extrabold text-slate-900 leading-tight tracking-tight">Enterprise<br />Edition</h3>
+                    </div>
+
+                    <p className="text-slate-650 text-xs text-center leading-relaxed mb-6 px-2">
+                      A platform engineered for <span className="font-bold text-slate-850">operational scale</span> and <span className="font-bold text-slate-850">deep customization</span>
+                    </p>
+
+                    <a
+                      href="/#contact"
+                      className="block text-center w-full bg-secondary hover:bg-[#35b399] text-primary font-extrabold text-xs py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-secondary/10 mb-8 tracking-wide"
+                    >
+                      Learn more
+                    </a>
+
+                    <div className="text-[10px] font-bold text-slate-800 uppercase tracking-wider mb-4 font-sans select-none">Helps enterprises handle</div>
+
+                    <ul className="space-y-4">
+                      {(project.enterprise_features && project.enterprise_features.length > 0 ? project.enterprise_features : [
+                        'High volume customers and transactions',
+                        'Advanced usage-based billing controls',
+                        'Flexible revenue recognition configurations',
+                        'Analytics with forecasting and AI insights',
+                        'In-depth customization for reports and modules',
+                        'Priority support and dedicated account manager'
+                      ]).map((feat, idx) => (
+                        <li key={idx} className="flex gap-3 items-start text-slate-650 text-xs leading-normal">
+                          <span className="text-slate-800 text-[10px] font-extrabold mt-0.5 select-none">✓</span>
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          )
+        )}
+
       </main>
 
       {/* Detailed Pricing Modal */}
-      {isPricingModalOpen && project && project.price_detail_html && (
+      {isPricingModalOpen && project && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-[#010B33]/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
             onClick={() => setIsPricingModalOpen(false)}
           />
-          
+
           {/* Modal Container */}
-          <div className="relative bg-white border border-slate-200/80 w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col z-10 animate-in fade-in zoom-in-95 duration-200">
+          <div className={`relative bg-white border border-slate-200/80 w-full rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col z-10 animate-in fade-in zoom-in-95 duration-200 ${project.category === 'polynexus' ? 'max-w-5xl' : 'max-w-3xl'}`}>
             {/* Header */}
             <div className="p-6 border-b border-slate-150 flex items-center justify-between bg-slate-50/50">
               <div>
                 <span className="text-[10px] font-bold text-secondary uppercase tracking-widest font-mono block mb-1">Pricing Configuration Matrix</span>
                 <h3 className="text-xl font-extrabold text-slate-900">{project.title} - Detailed Modules</h3>
               </div>
-              <button
-                onClick={() => setIsPricingModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all duration-200 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-4">
+                {project.category === 'polynexus' && (
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-2xs">
+                    <span className="text-sm">🇮🇳</span>
+                    <span>India</span>
+                  </div>
+                )}
+                <button
+                  onClick={() => setIsPricingModalOpen(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all duration-200 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-            
+
             {/* Content Viewport */}
-            <div className="p-6 overflow-y-auto flex-grow prose prose-slate max-w-none">
-              <div 
-                dangerouslySetInnerHTML={{ __html: project.price_detail_html }}
-                className="pricing-table-container"
-              />
+            <div className="p-6 overflow-y-auto flex-grow">
+              {project.category === 'polynexus' ? (
+                isCampusFlow ? renderCampusFlowPricing(true) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto font-sans">
+
+                    {/* Joined Container: Standard & Premium */}
+                    <div className="lg:col-span-2 bg-white border border-slate-200 rounded-3xl grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-150 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+
+                      {/* Standard Edition */}
+                      <div className="p-8 flex flex-col justify-between hover:bg-slate-50/20 transition-colors duration-200">
+                        <div>
+                          <div className="text-center pb-6 border-b border-slate-100 mb-6">
+                            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-widest font-mono block mb-4">STANDARD</span>
+
+                            <div className="flex flex-col items-center justify-center mb-1">
+                              <span className="text-slate-400 text-xs font-semibold line-through tracking-tight">₹{project.standard_original_price || '1499'}</span>
+                              <div className="flex items-start text-slate-900 tracking-tight font-sans mt-0.5">
+                                <span className="text-xl font-bold mt-1 mr-0.5">₹</span>
+                                <span className="text-5xl font-extrabold tracking-tighter">{project.standard_price || '1249'}</span>
+                              </div>
+                            </div>
+
+                            <span className="text-[10px] text-slate-500 font-bold block leading-relaxed mt-1">per Organization per Month</span>
+                            <span className="text-[9px] text-slate-400 font-medium block mt-0.5">(Billed annually)</span>
+                          </div>
+
+                          <p className="text-slate-650 text-xs text-center leading-relaxed mb-6 px-4">
+                            Best suited for businesses with <span className="font-bold text-slate-850">one time billing</span> requirements
+                          </p>
+
+                          <a
+                            href="/#contact"
+                            onClick={() => setIsPricingModalOpen(false)}
+                            className="block text-center w-full bg-secondary hover:bg-[#35b399] text-primary font-extrabold text-xs py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-secondary/10 mb-8 tracking-wide"
+                          >
+                            Start your 14-day free trial
+                          </a>
+
+                          <ul className="space-y-4">
+                            {(project.standard_features && project.standard_features.length > 0 ? project.standard_features : [
+                              'Create quotes and GST compliant invoices',
+                              'Customize for local languages and tax laws',
+                              'Multi-user access for up to 3 users',
+                              'Handle multi-currency transactions',
+                              'Set up automated payment reminders',
+                              'Manage projects & timesheets',
+                              'Enable self-service customer portal',
+                              'Customize your transaction templates'
+                            ]).map((feat, idx) => (
+                              <li key={idx} className="flex gap-3 items-start text-slate-650 text-xs leading-normal">
+                                <span className="text-slate-800 text-[10px] font-extrabold mt-0.5 select-none">✓</span>
+                                <span>{feat}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      {/* Premium Edition */}
+                      <div className="p-8 flex flex-col justify-between bg-secondary/[0.04] hover:bg-secondary/[0.08] transition-colors duration-200 relative">
+                        <div className="absolute top-4 right-4 bg-primary text-secondary border border-secondary/30 text-[8px] font-mono font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs animate-pulse">
+                          Most Popular
+                        </div>
+                        <div>
+                          <div className="text-center pb-6 border-b border-slate-200/60 mb-6">
+                            <span className="text-[11px] font-bold text-secondary uppercase tracking-widest font-mono block mb-4">PREMIUM</span>
+
+                            <div className="flex flex-col items-center justify-center mb-1">
+                              <span className="text-slate-400 text-xs font-semibold line-through tracking-tight">₹{project.premium_original_price || '3499'}</span>
+                              <div className="flex items-start text-slate-900 tracking-tight font-sans mt-0.5">
+                                <span className="text-xl font-bold mt-1 mr-0.5 text-secondary">₹</span>
+                                <span className="text-5xl font-extrabold tracking-tighter text-slate-900">{project.premium_price || '2999'}</span>
+                              </div>
+                            </div>
+
+                            <span className="text-[10px] text-slate-550 font-semibold block leading-relaxed mt-1">per Organization per Month</span>
+                            <span className="text-[9px] text-slate-405 font-medium block mt-0.5">(Billed annually)</span>
+                          </div>
+
+                          <p className="text-slate-650 text-xs text-center leading-relaxed mb-6 px-4">
+                            Best suited for businesses with <span className="font-bold text-slate-850">one time and subscription billing</span> requirements
+                          </p>
+
+                          <a
+                            href="/#contact"
+                            onClick={() => setIsPricingModalOpen(false)}
+                            className="block text-center w-full bg-primary hover:bg-slate-900 text-white font-extrabold text-xs py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-primary/20 mb-8 tracking-wide animate-pulse border border-secondary/35"
+                          >
+                            Start your 14-day free trial
+                          </a>
+
+                          <ul className="space-y-4">
+                            {(project.premium_features && project.premium_features.length > 0 ? project.premium_features : [
+                              'Includes everything in Standard +',
+                              'Manage subscription billing',
+                              'Multi-user access for up to 10 users',
+                              'Use hosted payment pages',
+                              'Automate billing for usage-based pricing models',
+                              'Manage in-app purchases'
+                            ]).map((feat, idx) => {
+                              const isHeader = idx === 0 && feat.toLowerCase().includes('everything in');
+                              return (
+                                <li key={idx} className="flex gap-3 items-start text-slate-650 text-xs leading-normal">
+                                  <span className="text-slate-800 text-[10px] font-extrabold mt-0.5 select-none">✓</span>
+                                  <span className={isHeader ? "font-bold text-slate-900" : ""}>{feat}</span>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Enterprise Edition Card */}
+                    <div className="lg:col-span-1 bg-white border border-slate-200 rounded-3xl p-8 hover:shadow-xl hover:border-slate-300 transition-all duration-300 flex flex-col justify-between relative overflow-hidden pt-12 shadow-xs">
+                      {/* Thick top bar banner */}
+                      <div className="absolute top-0 left-0 right-0 h-[6px] bg-primary" />
+
+                      <div>
+                        <div className="text-center pb-6 border-b border-slate-100 mb-6">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono block mb-3">ENTERPRISE EDITION</span>
+                          <h3 className="text-3xl font-extrabold text-slate-900 leading-tight tracking-tight">Enterprise<br />Edition</h3>
+                        </div>
+
+                        <p className="text-slate-650 text-xs text-center leading-relaxed mb-6 px-2">
+                          A platform engineered for <span className="font-bold text-slate-850">operational scale</span> and <span className="font-bold text-slate-850">deep customization</span>
+                        </p>
+
+                        <a
+                          href="/#contact"
+                          onClick={() => setIsPricingModalOpen(false)}
+                          className="block text-center w-full bg-secondary hover:bg-[#35b399] text-primary font-extrabold text-xs py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-secondary/10 mb-8 tracking-wide"
+                        >
+                          Learn more
+                        </a>
+
+                        <div className="text-[10px] font-bold text-slate-800 uppercase tracking-wider mb-4 font-sans select-none">Helps enterprises handle</div>
+
+                        <ul className="space-y-4">
+                          {(project.enterprise_features && project.enterprise_features.length > 0 ? project.enterprise_features : [
+                            'High volume customers and transactions',
+                            'Advanced usage-based billing controls',
+                            'Flexible revenue recognition configurations',
+                            'Analytics with forecasting and AI insights',
+                            'In-depth customization for reports and modules',
+                            'Priority support and dedicated account manager'
+                          ]).map((feat, idx) => (
+                            <li key={idx} className="flex gap-3 items-start text-slate-650 text-xs leading-normal">
+                              <span className="text-slate-800 text-[10px] font-extrabold mt-0.5 select-none">✓</span>
+                              <span>{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                  </div>
+                )
+              ) : (
+                <div className="prose prose-slate max-w-none">
+                  {project.price_detail_html && (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: project.price_detail_html }}
+                      className="pricing-table-container"
+                    />
+                  )}
+                </div>
+              )}
             </div>
-            
+
             {/* Footer */}
             <div className="p-6 border-t border-slate-150 flex items-center justify-between bg-slate-50/50">
               <div className="text-xs text-slate-500 font-mono">
-                Base Rate: <span className="font-bold text-slate-900">{project.price}</span>
+                {project.category === 'polynexus' ? (
+                  <span>Showing all available standard packages for this product</span>
+                ) : (
+                  <span>Base Rate: <span className="font-bold text-slate-900">{project.price}</span></span>
+                )}
               </div>
               <button
                 onClick={() => {
@@ -670,7 +1420,6 @@ export default function ProjectDetail() {
                   if (contactEl) {
                     contactEl.scrollIntoView({ behavior: 'smooth' });
                   } else {
-                    // Navigate to home and hash
                     window.location.href = '/#contact';
                   }
                 }}

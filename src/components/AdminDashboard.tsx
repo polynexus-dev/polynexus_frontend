@@ -18,13 +18,14 @@ import {
   createFAQ, updateFAQ, deleteFAQ,
   createBlogPost, updateBlogPost, deleteBlogPost,
   updateContactInfo,
-  updateHeroInfo
+  updateHeroInfo,
+  fetchEnquiries, deleteEnquiry, replyToEnquiry
 } from '../api';
-import type { Service, Project, Testimonial, FAQItem, BlogPost, ContactInfo, HeroInfo } from '../api';
+import type { Service, Project, Testimonial, FAQItem, BlogPost, ContactInfo, HeroInfo, Enquiry } from '../api';
 import { 
   Lock, User, LogOut, Plus, Edit2, Trash2, X, Info, 
   Zap, Database, Shield, Layers, Cpu, Globe, FolderGit, 
-  HelpCircle, Settings, FileText, Star, ArrowLeft
+  HelpCircle, Settings, FileText, Star, ArrowLeft, Mail
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -38,7 +39,7 @@ export default function AdminDashboard() {
   const [loginLoading, setLoginLoading] = useState(false);
 
   // Navigation State
-  const [activeTab, setActiveTab] = useState<'services' | 'projects' | 'testimonials' | 'faqs' | 'blog' | 'contact' | 'hero'>('services');
+  const [activeTab, setActiveTab] = useState<'services' | 'projects' | 'testimonials' | 'faqs' | 'blog' | 'contact' | 'hero' | 'enquiries'>('services');
 
   // Loaded Data State
   const [services, setServices] = useState<Service[]>([]);
@@ -47,7 +48,12 @@ export default function AdminDashboard() {
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
+
+  // Reply States
+  const [replyText, setReplyText] = useState('');
+  const [replyingId, setReplyingId] = useState<number | null>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,7 +66,28 @@ export default function AdminDashboard() {
   const [serviceForm, setServiceForm] = useState<Omit<Service, 'icon'>>({ id: '', title: '', shortDesc: '', fullDesc: '', features: [''], specs: { '': '' } });
   const [serviceIcon, setServiceIcon] = useState('Zap');
 
-   const [projectForm, setProjectForm] = useState<Omit<Project, 'icon'>>({ title: '', category: 'enterprise', desc: '', metric: '', metricLabel: '', tech: [''], image: '', file: '', longDesc: '', benefits: [''], results: [''], price: '', price_detail_html: '' });
+  const [projectForm, setProjectForm] = useState<Omit<Project, 'icon'>>({
+    title: '',
+    category: 'polynexus',
+    desc: '',
+    metric: '',
+    metricLabel: '',
+    tech: [''],
+    image: '',
+    file: '',
+    longDesc: '',
+    benefits: [''],
+    results: [''],
+    price: '',
+    price_detail_html: '',
+    standard_price: '',
+    standard_original_price: '',
+    premium_price: '',
+    premium_original_price: '',
+    standard_features: [''],
+    premium_features: [''],
+    enterprise_features: ['']
+  });
   const [projectIcon, setProjectIcon] = useState('Cpu');
 
   const [testimonialForm, setTestimonialForm] = useState<Testimonial>({ name: '', role: '', company: '', content: '', rating: 5, avatar: '' });
@@ -112,11 +139,46 @@ export default function AdminDashboard() {
       } else if (activeTab === 'hero') {
         const res = await fetchHeroInfo();
         setHeroForm(res);
+      } else if (activeTab === 'enquiries') {
+        const res = await fetchEnquiries();
+        setEnquiries(res);
       }
     } catch (err) {
       console.error('Error loading tab data:', err);
     } finally {
       setDataLoading(false);
+    }
+  };
+
+  const handleDeleteEnquiry = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this enquiry?')) return;
+    try {
+      await deleteEnquiry(id);
+      const res = await fetchEnquiries();
+      setEnquiries(res);
+      if (replyingId === id) {
+        setReplyingId(null);
+        setReplyText('');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete enquiry');
+    }
+  };
+
+  const handleReplyEnquiry = async (id: number) => {
+    if (!replyText.trim()) {
+      alert('Reply message cannot be empty');
+      return;
+    }
+    try {
+      await replyToEnquiry(id, replyText);
+      setReplyText('');
+      setReplyingId(null);
+      const res = await fetchEnquiries();
+      setEnquiries(res);
+      alert('Reply saved and simulated dispatch logged successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to send reply');
     }
   };
 
@@ -152,7 +214,28 @@ export default function AdminDashboard() {
     setServiceForm({ id: '', title: '', shortDesc: '', fullDesc: '', features: [''], specs: { '': '' } });
     setServiceIcon('Zap');
     
-     setProjectForm({ title: '', category: 'enterprise', desc: '', metric: '', metricLabel: '', tech: [''], image: '', file: '', longDesc: '', benefits: [''], results: [''], price: '', price_detail_html: '' });
+    setProjectForm({
+      title: '',
+      category: 'polynexus',
+      desc: '',
+      metric: '',
+      metricLabel: '',
+      tech: [''],
+      image: '',
+      file: '',
+      longDesc: '',
+      benefits: [''],
+      results: [''],
+      price: '',
+      price_detail_html: '',
+      standard_price: '',
+      standard_original_price: '',
+      premium_price: '',
+      premium_original_price: '',
+      standard_features: [''],
+      premium_features: [''],
+      enterprise_features: ['']
+    });
     setProjectIcon('Cpu');
     
     setTestimonialForm({ name: '', role: '', company: '', content: '', rating: 5, avatar: '' });
@@ -194,7 +277,14 @@ export default function AdminDashboard() {
         benefits: item.benefits && item.benefits.length > 0 ? item.benefits : [''],
         results: item.results && item.results.length > 0 ? item.results : [''],
         price: item.price || '',
-        price_detail_html: item.price_detail_html || ''
+        price_detail_html: item.price_detail_html || '',
+        standard_price: item.standard_price || '',
+        standard_original_price: item.standard_original_price || '',
+        premium_price: item.premium_price || '',
+        premium_original_price: item.premium_original_price || '',
+        standard_features: item.standard_features && item.standard_features.length > 0 ? item.standard_features : [''],
+        premium_features: item.premium_features && item.premium_features.length > 0 ? item.premium_features : [''],
+        enterprise_features: item.enterprise_features && item.enterprise_features.length > 0 ? item.enterprise_features : ['']
       });
       const iconName = item.icon?.name || 'Cpu';
       setProjectIcon(iconName);
@@ -267,7 +357,10 @@ export default function AdminDashboard() {
           icon: projectIcon,
           tech: projectForm.tech.filter((t) => t.trim() !== ''),
           benefits: (projectForm.benefits || []).filter((b) => b.trim() !== ''),
-          results: (projectForm.results || []).filter((r) => r.trim() !== '')
+          results: (projectForm.results || []).filter((r) => r.trim() !== ''),
+          standard_features: (projectForm.standard_features || []).filter((f) => f.trim() !== ''),
+          premium_features: (projectForm.premium_features || []).filter((f) => f.trim() !== ''),
+          enterprise_features: (projectForm.enterprise_features || []).filter((f) => f.trim() !== '')
         };
         if (modalMode === 'create') {
           await createProject(payload);
@@ -411,6 +504,63 @@ export default function AdminDashboard() {
       const copy = [...(prev.results || [])];
       copy[index] = val;
       return { ...prev, results: copy };
+    });
+  };
+
+  const addStandardFeatureRow = () => {
+    setProjectForm(prev => ({ ...prev, standard_features: [...(prev.standard_features || []), ''] }));
+  };
+
+  const removeStandardFeatureRow = (index: number) => {
+    setProjectForm(prev => ({
+      ...prev,
+      standard_features: (prev.standard_features || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateStandardFeatureRow = (index: number, val: string) => {
+    setProjectForm(prev => {
+      const copy = [...(prev.standard_features || [])];
+      copy[index] = val;
+      return { ...prev, standard_features: copy };
+    });
+  };
+
+  const addPremiumFeatureRow = () => {
+    setProjectForm(prev => ({ ...prev, premium_features: [...(prev.premium_features || []), ''] }));
+  };
+
+  const removePremiumFeatureRow = (index: number) => {
+    setProjectForm(prev => ({
+      ...prev,
+      premium_features: (prev.premium_features || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const updatePremiumFeatureRow = (index: number, val: string) => {
+    setProjectForm(prev => {
+      const copy = [...(prev.premium_features || [])];
+      copy[index] = val;
+      return { ...prev, premium_features: copy };
+    });
+  };
+
+  const addEnterpriseFeatureRow = () => {
+    setProjectForm(prev => ({ ...prev, enterprise_features: [...(prev.enterprise_features || []), ''] }));
+  };
+
+  const removeEnterpriseFeatureRow = (index: number) => {
+    setProjectForm(prev => ({
+      ...prev,
+      enterprise_features: (prev.enterprise_features || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateEnterpriseFeatureRow = (index: number, val: string) => {
+    setProjectForm(prev => {
+      const copy = [...(prev.enterprise_features || [])];
+      copy[index] = val;
+      return { ...prev, enterprise_features: copy };
     });
   };
 
@@ -576,6 +726,15 @@ export default function AdminDashboard() {
               <Layers className="w-4 h-4" />
               Hero Section
             </button>
+            <button
+              onClick={() => setActiveTab('enquiries')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'enquiries' ? 'bg-secondary text-primary' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <Mail className="w-4 h-4" />
+              User Enquiries
+            </button>
           </nav>
         </div>
 
@@ -623,10 +782,11 @@ export default function AdminDashboard() {
               {activeTab === 'blog' && 'Journal BlogPost Articles'}
               {activeTab === 'contact' && 'Global Coordinates Config'}
               {activeTab === 'hero' && 'Hero Section Configuration'}
+              {activeTab === 'enquiries' && 'User Contact Enquiries'}
             </h2>
           </div>
 
-          {activeTab !== 'contact' && activeTab !== 'hero' && (
+          {activeTab !== 'contact' && activeTab !== 'hero' && activeTab !== 'enquiries' && (
             <button
               onClick={openCreateModal}
               className="bg-secondary hover:bg-[#35b399] text-primary text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -697,7 +857,7 @@ export default function AdminDashboard() {
                     {projects.map((item) => (
                       <tr key={item.id} className="hover:bg-white/2 transition-colors">
                         <td className="py-3.5 pl-2 font-bold text-white">{item.title}</td>
-                        <td className="py-3.5 font-bold font-mono"><span className="px-2.5 py-0.5 rounded border border-white/5 bg-white/5 text-slate-300 uppercase text-[9px]">{item.category}</span></td>
+                        <td className="py-3.5 font-bold font-mono"><span className="px-2.5 py-0.5 rounded border border-white/5 bg-white/5 text-slate-300 uppercase text-[9px]">{item.category === 'polynexus' ? 'Polynexus' : item.category === 'custom' ? 'Custom' : item.category}</span></td>
                         <td className="py-3.5 font-mono text-secondary">{item.metric} ({item.metricLabel})</td>
                         <td className="py-3.5 text-slate-400 max-w-xs truncate">{item.tech.join(', ')}</td>
                         <td className="py-3.5 text-right space-x-1">
@@ -1101,6 +1261,109 @@ export default function AdminDashboard() {
                 </div>
               </form>
             )}
+
+            {/* ENQUIRIES RENDER */}
+            {activeTab === 'enquiries' && (
+              <div className="space-y-6">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                        <th className="pb-3 pl-2">Name</th>
+                        <th className="pb-3">Email</th>
+                        <th className="pb-3">Company</th>
+                        <th className="pb-3">Message</th>
+                        <th className="pb-3">Submitted At</th>
+                        <th className="pb-3">Status</th>
+                        <th className="pb-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-xs divide-y divide-slate-800/50">
+                      {enquiries.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-8 text-center text-slate-500 italic">No enquiries received yet.</td>
+                        </tr>
+                      ) : (
+                        enquiries.map((item) => (
+                          <tr key={item.id} className="hover:bg-white/2 transition-colors">
+                            <td className="py-3.5 pl-2 font-bold text-white whitespace-nowrap">{item.name}</td>
+                            <td className="py-3.5 font-mono text-slate-300">{item.email}</td>
+                            <td className="py-3.5 text-slate-300">{item.company || <span className="text-slate-600">-</span>}</td>
+                            <td className="py-3.5 text-slate-400 max-w-xs truncate" title={item.message}>{item.message}</td>
+                            <td className="py-3.5 text-slate-400 font-mono whitespace-nowrap">{item.created_at}</td>
+                            <td className="py-3.5 whitespace-nowrap">
+                              {item.replied ? (
+                                <span className="px-2.5 py-0.5 rounded border border-secondary/20 bg-secondary/10 text-secondary text-[9px] font-bold uppercase">Replied</span>
+                              ) : (
+                                <span className="px-2.5 py-0.5 rounded border border-accent/20 bg-accent/10 text-accent text-[9px] font-bold uppercase">Pending</span>
+                              )}
+                            </td>
+                            <td className="py-3.5 text-right space-x-1.5 whitespace-nowrap">
+                              <button 
+                                onClick={() => {
+                                  setReplyingId(item.id);
+                                  setReplyText(item.reply_message || '');
+                                }} 
+                                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] font-bold rounded-lg text-secondary hover:text-white transition-colors cursor-pointer animate-none"
+                              >
+                                {item.replied ? 'View/Edit Reply' : 'Reply'}
+                              </button>
+                              <button onClick={() => handleDeleteEnquiry(item.id)} className="p-2 bg-slate-850 hover:bg-red-550/15 rounded-lg text-slate-350 hover:text-red-400 transition-colors cursor-pointer inline-flex items-center">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Reply Form Section */}
+                {replyingId !== null && (
+                  <div className="mt-8 border-t border-slate-800 pt-6 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-bold text-white">
+                        {enquiries.find(e => e.id === replyingId)?.replied ? 'Update Reply' : 'Send Reply'} to {enquiries.find(e => e.id === replyingId)?.name}
+                      </h3>
+                      <button 
+                        onClick={() => {
+                          setReplyingId(null);
+                          setReplyText('');
+                        }} 
+                        className="text-slate-400 hover:text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" /> Cancel
+                      </button>
+                    </div>
+
+                    <div className="bg-[#010620]/65 border border-slate-800 rounded-2xl p-4 mb-4">
+                      <span className="block text-[9px] font-bold text-slate-450 uppercase tracking-wider font-mono mb-1.5">Original Message</span>
+                      <p className="text-xs text-slate-300 whitespace-pre-wrap">{enquiries.find(e => e.id === replyingId)?.message}</p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reply Content</label>
+                      <textarea
+                        rows={4}
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        className="w-full bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-secondary transition-colors"
+                        placeholder="Type your response specifications here..."
+                      />
+                      <div className="flex justify-end pt-2">
+                        <button
+                          onClick={() => handleReplyEnquiry(replyingId)}
+                          className="bg-secondary hover:bg-[#35b399] text-primary text-xs font-bold px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
+                        >
+                          Submit Reply
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -1301,9 +1564,8 @@ export default function AdminDashboard() {
                         onChange={(e: any) => setProjectForm(prev => ({ ...prev, category: e.target.value }))}
                         className="w-full bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-secondary font-mono"
                       >
-                        <option value="enterprise">Enterprise Management</option>
-                        <option value="logistics">Custom Operations & Logistics</option>
-                        <option value="saas">Productivity & B2B SaaS</option>
+                        <option value="polynexus">Polynexus Products</option>
+                        <option value="custom">Custom Software</option>
                       </select>
                     </div>
                   </div>
@@ -1571,6 +1833,152 @@ export default function AdminDashboard() {
                         className="w-full bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-4 py-2.5 text-[11px] focus:outline-none focus:border-secondary font-mono leading-relaxed"
                         placeholder="Raw HTML content (e.g. <table>...</table>)..."
                       />
+                    </div>
+                  )}
+
+                  {/* Polynexus Products Pricing Tiers (Only shown for polynexus category) */}
+                  {projectForm.category === 'polynexus' && (
+                    <div className="border-t border-slate-800/85 pt-4 mt-4 space-y-4">
+                      <div className="text-[11px] font-bold text-secondary uppercase tracking-wider font-mono">3-Tier Plan Configuration</div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Standard Price (Discounted)</label>
+                          <input
+                            type="text"
+                            value={projectForm.standard_price || ''}
+                            onChange={(e) => setProjectForm(prev => ({ ...prev, standard_price: e.target.value }))}
+                            className="w-full bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-secondary font-mono"
+                            placeholder="e.g. 1249"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Standard Price (Original)</label>
+                          <input
+                            type="text"
+                            value={projectForm.standard_original_price || ''}
+                            onChange={(e) => setProjectForm(prev => ({ ...prev, standard_original_price: e.target.value }))}
+                            className="w-full bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-secondary font-mono"
+                            placeholder="e.g. 1499"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Premium Price (Discounted)</label>
+                          <input
+                            type="text"
+                            value={projectForm.premium_price || ''}
+                            onChange={(e) => setProjectForm(prev => ({ ...prev, premium_price: e.target.value }))}
+                            className="w-full bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-secondary font-mono"
+                            placeholder="e.g. 2999"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Premium Price (Original)</label>
+                          <input
+                            type="text"
+                            value={projectForm.premium_original_price || ''}
+                            onChange={(e) => setProjectForm(prev => ({ ...prev, premium_original_price: e.target.value }))}
+                            className="w-full bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-secondary font-mono"
+                            placeholder="e.g. 3499"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Standard Plan Features List */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                          Standard Plan Features List
+                          <button type="button" onClick={addStandardFeatureRow} className="text-secondary hover:underline text-[9px] font-bold flex items-center gap-0.5 cursor-pointer">
+                            <Plus className="w-3 h-3" /> Add Standard Feature
+                          </button>
+                        </label>
+                        <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto pt-1.5">
+                          {(projectForm.standard_features || ['']).map((feat, index) => (
+                            <div key={index} className="flex gap-2">
+                              <input
+                                type="text"
+                                value={feat}
+                                onChange={(e) => updateStandardFeatureRow(index, e.target.value)}
+                                className="flex-1 bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-secondary"
+                                placeholder="e.g. Create quotes and GST compliant invoices"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeStandardFeatureRow(index)}
+                                disabled={(projectForm.standard_features || []).length <= 1}
+                                className="p-1.5 border border-slate-800 hover:border-red-500 rounded-xl text-slate-400 hover:text-red-400 disabled:opacity-30 cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Premium Plan Features List */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                          Premium Plan Features List
+                          <button type="button" onClick={addPremiumFeatureRow} className="text-secondary hover:underline text-[9px] font-bold flex items-center gap-0.5 cursor-pointer">
+                            <Plus className="w-3 h-3" /> Add Premium Feature
+                          </button>
+                        </label>
+                        <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto pt-1.5">
+                          {(projectForm.premium_features || ['']).map((feat, index) => (
+                            <div key={index} className="flex gap-2">
+                              <input
+                                type="text"
+                                value={feat}
+                                onChange={(e) => updatePremiumFeatureRow(index, e.target.value)}
+                                className="flex-1 bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-secondary"
+                                placeholder="e.g. Manage subscription billing"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removePremiumFeatureRow(index)}
+                                disabled={(projectForm.premium_features || []).length <= 1}
+                                className="p-1.5 border border-slate-800 hover:border-red-500 rounded-xl text-slate-400 hover:text-red-400 disabled:opacity-30 cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Enterprise Plan Features List */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                          Enterprise Plan Features List
+                          <button type="button" onClick={addEnterpriseFeatureRow} className="text-secondary hover:underline text-[9px] font-bold flex items-center gap-0.5 cursor-pointer">
+                            <Plus className="w-3 h-3" /> Add Enterprise Feature
+                          </button>
+                        </label>
+                        <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto pt-1.5">
+                          {(projectForm.enterprise_features || ['']).map((feat, index) => (
+                            <div key={index} className="flex gap-2">
+                              <input
+                                type="text"
+                                value={feat}
+                                onChange={(e) => updateEnterpriseFeatureRow(index, e.target.value)}
+                                className="flex-1 bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-secondary"
+                                placeholder="e.g. Flexible revenue recognition configurations"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeEnterpriseFeatureRow(index)}
+                                disabled={(projectForm.enterprise_features || []).length <= 1}
+                                className="p-1.5 border border-slate-800 hover:border-red-500 rounded-xl text-slate-400 hover:text-red-400 disabled:opacity-30 cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
