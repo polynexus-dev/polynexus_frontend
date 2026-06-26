@@ -10,4 +10,4 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:7770
+      - VITE_API_URL=http://13.235.143.251:7770
