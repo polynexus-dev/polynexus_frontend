@@ -52,4 +52,30 @@
   .reveal-delay-200 { transition-delay: 200ms; }
   .reveal-delay-300 { transition-delay: 300ms; }
   .reveal-delay-400 { transition-delay: 400ms; }
+
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f8fafc; /* slate-50 to match bg-slate-50 */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-secondary, #45C7AC);
+    border-radius: 9999px;
+    border: 2px solid #f8fafc; /* padding effect */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #35b399; /* dark secondary */
+  }
+
+  /* Firefox Standard Scrollbar */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-secondary, #45C7AC) #f8fafc;
+  }
 }

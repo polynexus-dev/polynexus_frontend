@@ -125,14 +125,14 @@ export default function Hero() {
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <a
                 href={heroInfo?.cta1_link || "#contact"}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-secondary text-primary hover:bg-[#35b399] font-bold px-8 py-4 rounded-xl transition-all duration-250 hover:-translate-y-1 hover:shadow-xl hover:shadow-secondary/25 shadow-lg shadow-secondary/15"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-secondary text-primary hover:bg-[#35b399] font-bold px-8 py-4 rounded-xl transition-all duration-250 hover:-translate-y-1 hover:shadow-xl hover:shadow-secondary/25 shadow-lg shadow-secondary/15 text-[13px]"
               >
                 {heroInfo?.cta1_text || "Get Your Custom Solution"}
                 <ArrowRight className="w-5 h-5" />
               </a>
               <a
                 href={heroInfo?.cta2_link || "#services"}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border border-slate-200/80 text-slate-700 hover:bg-slate-50 hover:text-primary font-semibold px-8 py-4 rounded-xl transition-all duration-250 hover:-translate-y-1 shadow-sm hover:shadow-md"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border border-slate-200/80 text-slate-700 hover:bg-slate-50 hover:text-primary font-semibold px-8 py-4 rounded-xl transition-all duration-250 hover:-translate-y-1 shadow-sm hover:shadow-md text-[13px]"
               >
                 <Play className="w-4 h-4 text-accent fill-accent" />
                 {heroInfo?.cta2_text || "View Our Services"}

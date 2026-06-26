@@ -16,17 +16,19 @@ export default function Footer() {
   return (
     <footer className="bg-[#010B33] border-t border-slate-900 pt-20 pb-10 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Upper footer grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 border-b border-slate-900 pb-16">
           {/* Brand Info */}
           <div className="lg:col-span-5 flex flex-col gap-6">
-            <a href="/" className="flex items-center gap-3">
-              <img src={logoImg} alt="Polynexus Logo" className="h-9 w-auto" />
-              <span className="text-lg font-bold tracking-tight text-white">
-                Poly<span className="text-secondary">nexus</span>
-              </span>
-            </a>
+            <div className='flex items-center '>
+              <a href="/" className="flex items-center gap-3 bg-white px-6 rounded-2xl ">
+                <img src={logoImg} alt="Polynexus Logo" className="h-9 w-auto" />
+                <span className="text-lg font-bold tracking-tight text-primary">
+                  Poly<span className="text-secondary">nexus</span>
+                </span>
+              </a>
+            </div>
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
               Polynexus operates low-latency serverless, polymorphic database query platforms, and threat prevention proxies on high-performance WASM edge compute systems globally.
             </p>
