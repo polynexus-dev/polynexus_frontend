@@ -2,16 +2,15 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   CheckCircle,
   Users,
-  Shield,
-  Clock,
-  Navigation,
-  CreditCard,
   Mail,
-  UserCheck
+  Lock,
+  FileText,
+  Calendar,
+  Video,
+  HardDrive
 } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
-
 
 interface CardData {
   icon: React.ReactNode;
@@ -23,71 +22,47 @@ interface CardData {
   note: string;
 }
 
-/* ─────────────────────────────────────────────
-   FeatureCard — Premium interactive card with:
-   • Cursor-tracking 3D perspective tilt
-   • Radial gradient glow following the pointer
-   • Animated accent top-bar that scales on hover
-   • Staggered IntersectionObserver scroll reveal
-   ───────────────────────────────────────────── */
 function FeatureCard({ card, index }: { card: CardData; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Staggered scroll reveal via IntersectionObserver
   useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setTimeout(() => setIsVisible(true), index * 120);
-          observer.unobserve(el);
+          setIsVisible(true);
+          observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [index]);
 
-  // 3D tilt + glow tracking
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = cardRef.current;
-    const glow = glowRef.current;
-    if (!el || !glow) return;
-
-    const rect = el.getBoundingClientRect();
+    if (!cardRef.current || !glowRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
 
-    // Subtle tilt — max 4deg for sophistication
-    const rotateX = ((y - centerY) / centerY) * -4;
-    const rotateY = ((x - centerX) / centerX) * 4;
-
-    el.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.02)`;
-
-    // Move the glow to follow cursor
-    glow.style.background = `radial-gradient(300px circle at ${x}px ${y}px, ${card.accent}18, transparent 70%)`;
+    glowRef.current.style.background = `radial-gradient(350px circle at ${x}px ${y}px, ${card.accent}12, transparent 80%)`;
   }, [card.accent]);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    if (cardRef.current) {
-      cardRef.current.style.transition = 'transform 0.15s ease-out, box-shadow 0.3s ease';
-    }
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    if (cardRef.current) {
-      cardRef.current.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease';
-      cardRef.current.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)';
-    }
     if (glowRef.current) {
       glowRef.current.style.background = 'transparent';
     }
@@ -112,7 +87,7 @@ function FeatureCard({ card, index }: { card: CardData; index: number }) {
         border: `1px solid ${isHovered ? card.accent + '30' : 'rgba(226,232,240,0.8)'}`,
       }}
     >
-      {/* Accent top-bar — scales from center on hover */}
+      {/* Accent top-bar */}
       <div
         className="absolute top-0 left-0 right-0 h-[3px]"
         style={{
@@ -174,7 +149,7 @@ function FeatureCard({ card, index }: { card: CardData; index: number }) {
         </ul>
       </div>
 
-      {/* Superiority Note footer */}
+      {/* Security note footer */}
       <div className="relative z-10 px-8 pb-8 mt-auto">
         <div
           className="rounded-2xl p-5"
@@ -188,7 +163,7 @@ function FeatureCard({ card, index }: { card: CardData; index: number }) {
             className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
             style={{ color: card.accent }}
           >
-            🔒 Superiority Note
+            🛡️ Security Focus
           </span>
           <p className="text-[11px] leading-relaxed text-slate-500">{card.note}</p>
         </div>
@@ -197,18 +172,20 @@ function FeatureCard({ card, index }: { card: CardData; index: number }) {
   );
 }
 
-export default function CampusNexus() {
-  const [students, setStudents] = useState<number>(1000);
-  const [staff, setStaff] = useState<number>(60);
+export default function PolyMX() {
+  const [users, setUsers] = useState<number>(50);
+  const [quota, setQuota] = useState<number>(5); // GB per user
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
-  // Math logic
   const isAnnual = billingPeriod === 'annual';
 
-  // Core base price
-  const coreRate = isAnnual ? 600.00 : 60.00;
-  const coreTotal = students * coreRate;
+  // Starter rate definitions (Competing aggressively with Google/Zoho)
+  const starterBasePrice = isAnnual ? 790.00 : 99.00;
+  const starterTotal = users * starterBasePrice;
 
+  // Professional rate definitions
+  const proBasePrice = isAnnual ? 1990.00 : 249.00;
+  const proTotal = users * proBasePrice;
 
   // Scroll to top on mount
   useEffect(() => {
@@ -222,24 +199,24 @@ export default function CampusNexus() {
       {/* Hero section */}
       <section className="relative pt-40 pb-20 overflow-hidden bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50">
         {/* Soft abstract blur halos */}
-        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-purple-200/30 rounded-full blur-[120px] -z-10" />
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-indigo-200/30 rounded-full blur-[120px] -z-10" />
         <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#45C7AC]/10 rounded-full blur-[100px] -z-10" />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#010B33]/5 border border-[#010B33]/10 text-[#010B33] text-xs font-bold uppercase tracking-wider mb-6">
             <span className="w-1.5 h-1.5 bg-[#45C7AC] rounded-full animate-pulse" />
-            Enterprise ERP Suite
+            SaaS Collaboration Suite
           </span>
           
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight font-display mb-6 text-[#010B33] leading-none">
-            Empower Your Institution with <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-[#010B33] via-purple-900 to-[#45C7AC] bg-clip-text text-transparent">
-              CampusNexus
+            Secure Collaboration with <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-[#010B33] via-blue-900 to-[#45C7AC] bg-clip-text text-transparent">
+              PolyMX Suite
             </span>
           </h1>
           
           <p className="max-w-3xl mx-auto text-lg sm:text-xl text-slate-650 font-light leading-relaxed mb-10">
-            A premium, highly secure, and modular university administration ecosystem designed to automate operations, secure records, and scale pricing flexibly.
+            Our own secure workspace alternative to Google and Zoho. Complete mail server, cloud storage, calendar, video meetings, and collaborative document editing — encrypted at rest and shielded by design.
           </p>
         </div>
       </section>
@@ -248,102 +225,102 @@ export default function CampusNexus() {
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-20">
           <span className="text-xs font-bold text-[#45C7AC] uppercase tracking-widest bg-[#45C7AC]/10 px-3.5 py-1.5 rounded-full">
-            Product Features
+            Key Products Included
           </span>
           <h2 className="text-3xl font-extrabold tracking-tight font-display sm:text-4xl text-[#010B33] mt-4 mb-4">
-            Six Pillars of Campus Automation
+            Five Modules, Zero Compromise
           </h2>
           <p className="text-slate-500 text-base max-w-2xl mx-auto">
-            Discover how CampusNexus delivers unparalleled operational integrity without technical complexity.
+            PolyMX integrates all productivity essentials into a single, hardened stack under your custom domain.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
           {[
             {
-              icon: <Shield className="w-5 h-5" />,
-              title: 'Core Registrar Hub',
-              accent: '#7c3aed',
-              accentBg: 'rgba(124,58,237,0.08)',
-              accentBorder: 'rgba(124,58,237,0.15)',
-              specs: [
-                "Secure isolated workspace separating each college's private registers.",
-                'Detailed registrar directory mapping student and faculty profiles.',
-                'Verification onboarding delivering secure links to student profiles.',
-                'Authorized device locks verifying security browser parameters.',
-              ],
-              note: 'Traditional college software systems mix account data and are vulnerable to security issues. CampusNexus segregates account registers entirely and enforces authorized device locks.',
-            },
-            {
-              icon: <UserCheck className="w-5 h-5" />,
-              title: 'Face Attendance',
-              accent: '#45C7AC',
-              accentBg: 'rgba(69,199,172,0.08)',
-              accentBorder: 'rgba(69,199,172,0.15)',
-              specs: [
-                'Facial check-ins backed by real-time interactive face verification check-ins.',
-                'Location verification zones limiting check-in zones to classroom blocks.',
-                'Lecturer control panels establishing dynamic session timers.',
-                'Room boundary check-ins mapping physical classroom blocks.',
-              ],
-              note: 'Eliminates proxy check-ins. By combining face print matching, location verification, and lecturer timers, students must be physically present inside the class to check in.',
-            },
-            {
-              icon: <Clock className="w-5 h-5" />,
-              title: 'Salary & Payroll',
-              accent: '#E27000',
-              accentBg: 'rgba(226,112,0,0.08)',
-              accentBorder: 'rgba(226,112,0,0.15)',
-              specs: [
-                'Flexible payroll templates mapping basic pay, allowances, and tax deduction parameters.',
-                'Direct attendance synchronization linking face check-in logs to monthly payouts.',
-                'Absence deduction automation calculating gross adjustments per missing day.',
-                'Leave balance tracking adjusting duty leaves, medical lists, and casual balance pools.',
-              ],
-              note: 'Most payroll tools require manual exports. CampusNexus synchronizes face logs directly with salary allocations, reducing monthly payroll calculations to a single click.',
-            },
-            {
-              icon: <CreditCard className="w-5 h-5" />,
-              title: 'Accounts & Fee Ledger',
-              accent: '#2563eb',
-              accentBg: 'rgba(37,99,235,0.08)',
-              accentBorder: 'rgba(37,99,235,0.15)',
-              specs: [
-                'Custom fee category templates separating tuition, transport, hostel, and lab logs.',
-                'Bulk invoice rollout pushing payment configs to entire semesters or branches.',
-                'Proportional splitting rules dividing payments across sub-items automatically.',
-                'Flexible banking integrations tracking cards, Net Banking, and online payments.',
-              ],
-              note: 'Traditional ledgers require manual splitting. CampusNexus distributes payments proportionally, keeping accounts ledger reconciliations automated and clean.',
-            },
-            {
-              icon: <Navigation className="w-5 h-5" />,
-              title: 'Transit & Digital Passes',
-              accent: '#0d9488',
-              accentBg: 'rgba(13,148,136,0.08)',
-              accentBorder: 'rgba(13,148,136,0.15)',
-              specs: [
-                'Interactive route maps tracing live moving bus markers.',
-                'Real-time location updates tracking active bus status without lag.',
-                'Interactive stopped sequences mapping designated stop positions.',
-                'Boarding digital passes featuring custom colors and college logo center points.',
-              ],
-              note: 'Combines live route tracking, transit cost accounting, and digital boarding passes in a single system, removing the need for costly vehicle tracking hardware.',
-            },
-            {
               icon: <Mail className="w-5 h-5" />,
-              title: 'Custom Domain Emails',
-              accent: '#059669',
-              accentBg: 'rgba(5,150,105,0.08)',
-              accentBorder: 'rgba(5,150,105,0.15)',
+              title: 'Hardened Webmail',
+              accent: '#3b82f6',
+              accentBg: 'rgba(59,130,246,0.08)',
+              accentBorder: 'rgba(59,130,246,0.15)',
               specs: [
-                'Free custom domain email addresses setup for both students and faculty.',
-                'Dedicated custom domain setup (e.g., student@yourcollege.edu.in) at no extra cost.',
-                'Strict registration domain restrictions blocking sign-ups outside of college domains.',
-                'Automated custom-branded notification templates for all official college emails.',
+                'Highly secure email exchange with private transmission routing.',
+                'Advanced domain verification signatures to protect sender trust.',
+                'Built-in intelligent message filtering, anti-spoofing, and quarantine guards.',
+                'Fully integrated webmail interface with multiple profile logging.'
               ],
-              note: "Protects university login portals from external sign-ups while ensuring college notifications are delivered directly under the institution's own domain name.",
+              note: 'Standard mail hosts often log transmission parameters in plain text. PolyMX seals transmission routes and structures message indexes using secure cryptographic hashes.'
             },
+            {
+              icon: <HardDrive className="w-5 h-5" />,
+              title: 'PolyMX Drive',
+              accent: '#10b981',
+              accentBg: 'rgba(16,185,129,0.08)',
+              accentBorder: 'rgba(16,185,129,0.15)',
+              specs: [
+                'Isolated organization directory structures preventing cross-tenant leaks.',
+                'Secure link generation with expiry parameters and download controls.',
+                'Instant drag-and-drop file uploading and version tracking.',
+                'Advanced content searches within document indexes.'
+              ],
+              note: 'Traditional cloud storage reserves access key sets. PolyMX implements tenant-level segregation guarantees, ensuring administrators cannot peek into user drive vaults.'
+            },
+            {
+              icon: <FileText className="w-5 h-5" />,
+              title: 'Collaborative Office',
+              accent: '#f59e0b',
+              accentBg: 'rgba(245,158,11,0.08)',
+              accentBorder: 'rgba(245,158,11,0.15)',
+              specs: [
+                'Real-time document writing and concurrent edits directly in-browser.',
+                'Spreadsheet editor with custom functional matrices and data logs.',
+                'Isolated revision history rolls restoring previous document versions.',
+                'Export formats support for quick document distribution.'
+              ],
+              note: 'No third-party trackers or external scripts are injected during sessions. Collaborative editors execute strictly within private system frames.'
+            },
+            {
+              icon: <Calendar className="w-5 h-5" />,
+              title: 'Secure Calendar',
+              accent: '#8b5cf6',
+              accentBg: 'rgba(139,92,246,0.08)',
+              accentBorder: 'rgba(139,92,246,0.15)',
+              specs: [
+                'Multi-tenant event scheduling and booking calendar loops.',
+                'Domain-wide resource indicators showing room and user busy logs.',
+                'Sync indicators sending secure invitations automatically.',
+                'Dedicated filters for scheduling meetings, out-of-office, and reminders.'
+              ],
+              note: 'Event logs and calendars are isolated per domain. Competitors cannot scrap public scheduling tables or user directories.'
+            },
+            {
+              icon: <Video className="w-5 h-5" />,
+              title: 'PolyMX Meet',
+              accent: '#ec4899',
+              accentBg: 'rgba(236,72,153,0.08)',
+              accentBorder: 'rgba(236,72,153,0.15)',
+              specs: [
+                'Fully encrypted video and audio streams for remote conferences.',
+                'Direct browser execution requiring no plugins or software downloads.',
+                'Interactive screen sharing and real-time chat messages.',
+                'Meeting locking and password verification parameters.'
+              ],
+              note: 'Meet video frames bypass intermediate servers, establishing direct peer-to-peer tunnels wherever possible to guarantee voice and image privacy.'
+            },
+            {
+              icon: <Lock className="w-5 h-5" />,
+              title: 'Confidentiality Enforced',
+              accent: '#ef4444',
+              accentBg: 'rgba(239,68,68,0.08)',
+              accentBorder: 'rgba(239,68,68,0.15)',
+              specs: [
+                'Database-level private encryption protecting mail stores and user keys.',
+                'DevTools inspection locks blocking code snooping at browser levels.',
+                'Comprehensive audit registries logging administrators operations.',
+                'Enforced multi-factor authentication (MFA) across all endpoints.'
+              ],
+              note: 'Unlike general providers that index your content for analytics and profiling, PolyMX ensures your information remains strictly confidential with absolute database isolation.'
+            }
           ].map((card, idx) => (
             <FeatureCard key={idx} card={card} index={idx} />
           ))}
@@ -364,53 +341,53 @@ export default function CampusNexus() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#45C7AC] opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#45C7AC]" />
               </span>
-              Special Introductory Offer
+              Security Hardened Suite
             </span>
             <h2 className="text-3xl font-extrabold tracking-tight font-display sm:text-5xl text-white mt-4 mb-4">
-              Choose Your Plan
+              Choose Your Package
             </h2>
             <p className="text-slate-400 text-base max-w-xl mx-auto">
-              Start lean, or go all-in. Every plan includes branded custom domain emails, face attendance, and 24/7 support.
+              Configure your mailboxes and secure drive allocations. Switch plans or expand quotas as you scale.
             </p>
           </div>
 
-          {/* Institution Size Bar */}
+          {/* User Count and Drive Quota Sliders */}
           <div className="max-w-3xl mx-auto bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 p-6 sm:p-8 rounded-3xl mb-16">
             <h3 className="text-sm font-bold font-display mb-6 flex items-center gap-2.5 text-slate-300">
               <div className="w-7 h-7 rounded-lg bg-[#45C7AC]/15 flex items-center justify-center">
                 <Users className="w-4 h-4 text-[#45C7AC]" />
               </div>
-              Tell us your institution size
+              Define your deployment scale
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div>
                 <div className="flex justify-between items-baseline mb-3">
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Students</label>
-                  <span className="text-xl font-black text-white tabular-nums">{students.toLocaleString('en-IN')}</span>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mailboxes (Users)</label>
+                  <span className="text-xl font-black text-white tabular-nums">{users.toLocaleString('en-IN')}</span>
                 </div>
                 <input
-                  type="range" min="500" max="10000" step="50" value={students}
-                  onChange={e => setStudents(Math.max(500, parseInt(e.target.value) || 500))}
+                  type="range" min="5" max="500" step="5" value={users}
+                  onChange={e => setUsers(Math.max(5, parseInt(e.target.value) || 5))}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                  style={{ background: `linear-gradient(to right, #45C7AC 0%, #45C7AC ${((students - 500) / 9500) * 100}%, #1e293b ${((students - 500) / 9500) * 100}%, #1e293b 100%)` }}
+                  style={{ background: `linear-gradient(to right, #45C7AC 0%, #45C7AC ${((users - 5) / 495) * 100}%, #1e293b ${((users - 5) / 495) * 100}%, #1e293b 100%)` }}
                 />
                 <div className="flex justify-between text-[10px] text-slate-600 mt-1.5">
-                  <span>500</span><span>10,000</span>
+                  <span>5</span><span>500</span>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between items-baseline mb-3">
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Faculty & Staff</label>
-                  <span className="text-xl font-black text-white tabular-nums">{staff.toLocaleString('en-IN')}</span>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Storage Per Mailbox</label>
+                  <span className="text-xl font-black text-white tabular-nums">{quota} GB</span>
                 </div>
                 <input
-                  type="range" min="50" max="500" step="5" value={staff}
-                  onChange={e => setStaff(Math.max(50, parseInt(e.target.value) || 50))}
+                  type="range" min="1" max="50" step="1" value={quota}
+                  onChange={e => setQuota(Math.max(1, parseInt(e.target.value) || 1))}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                  style={{ background: `linear-gradient(to right, #E27000 0%, #E27000 ${((staff - 50) / 450) * 100}%, #1e293b ${((staff - 50) / 450) * 100}%, #1e293b 100%)` }}
+                  style={{ background: `linear-gradient(to right, #E27000 0%, #E27000 ${((quota - 1) / 49) * 100}%, #1e293b ${((quota - 1) / 49) * 100}%, #1e293b 100%)` }}
                 />
                 <div className="flex justify-between text-[10px] text-slate-600 mt-1.5">
-                  <span>50</span><span>500</span>
+                  <span>1 GB</span><span>50 GB</span>
                 </div>
               </div>
             </div>
@@ -461,29 +438,29 @@ export default function CampusNexus() {
             >
               <div className="mb-8">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Starter</span>
-                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Core Platform</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Perfect for smaller colleges getting started with digital campus management.</p>
+                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Secure Workspace</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">Secure mail and collaborative tools for teams beginning data sovereignty migration.</p>
               </div>
 
               <div className="mb-8">
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-xl text-slate-500 line-through font-semibold decoration-red-500/80 tabular-nums">₹{isAnnual ? '1,200' : '120'}</span>
-                  <span className="text-4xl font-black text-[#45C7AC] tabular-nums">₹{isAnnual ? '600' : '60'}</span>
-                  <span className="text-xs text-slate-500 font-semibold">/ student {isAnnual ? '/ year' : '/ month'}</span>
+                  <span className="text-xl text-slate-500 line-through font-semibold decoration-red-500/80 tabular-nums">₹{isAnnual ? '1,580' : '199'}</span>
+                  <span className="text-4xl font-black text-[#45C7AC] tabular-nums">₹{isAnnual ? '790' : '99'}</span>
+                  <span className="text-xs text-slate-500 font-semibold">/ user {isAnnual ? '/ year' : '/ month'}</span>
                 </div>
-                <p className="text-[10px] text-slate-600 mt-1">
-                  Est. total: <span className="line-through decoration-red-500/40">₹{Math.round(coreTotal * 2.0).toLocaleString('en-IN')}</span> <span className="text-white font-semibold">₹{Math.round(coreTotal).toLocaleString('en-IN')}</span> {isAnnual ? '/yr' : '/mo'} for {students.toLocaleString('en-IN')} students
+                <p className="text-[10px] text-slate-650 mt-1">
+                  Est. total: <span className="line-through decoration-red-500/40">₹{Math.round(starterTotal * 2.0).toLocaleString('en-IN')}</span> <span className="text-white font-semibold">₹{Math.round(starterTotal).toLocaleString('en-IN')}</span> {isAnnual ? '/yr' : '/mo'} for {users.toLocaleString('en-IN')} users
                 </p>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  'Secure multi-tenant registrar',
-                  'Face attendance & location guard',
-                  'Schedule & assignment management',
-                  'Custom domain emails for students & faculty',
-                  'Authorized device security locks',
-                  'Basic reports & dashboards',
+                  'Secure Webmail Client Integration',
+                  'Advanced Domain Trust Signature Setup',
+                  '5 GB Encrypted Drive space / user',
+                  'Collaborative Docs & spreadsheets',
+                  'Shared Team Calendars & Meet access',
+                  'Standard Database Encryption',
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-xs text-slate-400">
                     <CheckCircle className="w-3.5 h-3.5 text-slate-600 flex-shrink-0 mt-0.5" />
@@ -493,7 +470,7 @@ export default function CampusNexus() {
               </ul>
 
               <a
-                href={`mailto:sales@polynexus.in?subject=CampusNexus Starter Plan Enquiry&body=Hello,%0A%0AWe are interested in the Starter Plan for ${students} students and ${staff} staff (${billingPeriod}).%0A%0APlease send us a proposal.`}
+                href={`mailto:sales@polynexus.in?subject=PolyMX Starter Plan Enquiry&body=Hello,%0A%0AWe are interested in the PolyMX Starter Plan for ${users} users with ${quota} GB storage per user (${billingPeriod}).%0A%0APlease send us a subscription proposal.`}
                 className="group/btn relative block text-center w-full py-3.5 rounded-xl font-bold tracking-wide uppercase text-xs overflow-hidden"
                 style={{
                   background: 'transparent',
@@ -520,7 +497,6 @@ export default function CampusNexus() {
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 25px 60px -15px rgba(69,199,172,0.2)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 40px -10px rgba(69,199,172,0.12)'; }}
             >
-              {/* Recommended badge */}
               <div className="absolute top-0 right-6">
                 <div className="bg-[#45C7AC] text-[#010B33] text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-b-lg">
                   Most Popular
@@ -529,29 +505,30 @@ export default function CampusNexus() {
 
               <div className="mb-8">
                 <span className="text-[10px] font-bold text-[#45C7AC] uppercase tracking-widest">Professional</span>
-                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Campus Suite</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">Ideal for mid-to-large institutions wanting fee management, bus tracking, and hostel operations.</p>
+                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Hardened Enterprise</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">For scale organizations demanding absolute information isolation and audit records.</p>
               </div>
 
               <div className="mb-8">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black bg-gradient-to-r from-[#45C7AC] to-[#35b399] bg-clip-text text-transparent">Custom</span>
-                  <span className="text-xs text-slate-500 font-semibold">/ tailored quote</span>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-xl text-slate-500 line-through font-semibold decoration-red-500/80 tabular-nums">₹{isAnnual ? '3,980' : '499'}</span>
+                  <span className="text-4xl font-black text-[#45C7AC] tabular-nums">₹{isAnnual ? '1,990' : '249'}</span>
+                  <span className="text-xs text-slate-500 font-semibold">/ user {isAnnual ? '/ year' : '/ month'}</span>
                 </div>
-                <p className="text-[10px] text-slate-600 mt-1">
-                  Based on {students.toLocaleString('en-IN')} students & selected modules
+                <p className="text-[10px] text-slate-650 mt-1">
+                  Est. total: <span className="line-through decoration-red-500/40">₹{Math.round(proTotal * 2.0).toLocaleString('en-IN')}</span> <span className="text-white font-semibold">₹{Math.round(proTotal).toLocaleString('en-IN')}</span> {isAnnual ? '/yr' : '/mo'} for {users.toLocaleString('en-IN')} users
                 </p>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Starter',
-                  'Fee collection & accounts ledger',
-                  'Bus routes & live location tracking',
-                  'Hostel & mess boarding manager',
-                  'Exams scheduler & seat planner',
-                  'Library circulation & catalog',
-                  'TPO recruitment & placements',
+                  'Up to 20 GB Encrypted Drive space / user',
+                  'Real-time document revision histories',
+                  'Dedicated end-to-end encryption key chains',
+                  'Custom domain setup & DNS verifications',
+                  'Comprehensive admin operations logs',
+                  'Centralized directory service integrations',
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-xs text-slate-300">
                     <CheckCircle className="w-3.5 h-3.5 text-[#45C7AC] flex-shrink-0 mt-0.5" />
@@ -561,7 +538,7 @@ export default function CampusNexus() {
               </ul>
 
               <a
-                href={`mailto:sales@polynexus.in?subject=CampusNexus Professional Plan Enquiry&body=Hello,%0A%0AWe are interested in the Professional (Campus Suite) Plan for ${students} students and ${staff} staff (${billingPeriod}).%0A%0APlease send us a customized proposal with all included modules.`}
+                href={`mailto:sales@polynexus.in?subject=PolyMX Professional Plan Enquiry&body=Hello,%0A%0AWe are interested in the PolyMX Professional Plan for ${users} users with ${quota} GB storage per user (${billingPeriod}).%0A%0APlease send us a customized proposal.`}
                 className="group/btn relative block text-center w-full py-3.5 rounded-xl font-black tracking-wide uppercase text-xs overflow-hidden"
                 style={{
                   background: 'linear-gradient(135deg, #45C7AC, #35b399)',
@@ -593,29 +570,29 @@ export default function CampusNexus() {
             >
               <div className="mb-8">
                 <span className="text-[10px] font-bold text-[#E27000] uppercase tracking-widest">Enterprise</span>
-                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Full Automation</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Complete ERP suite including payroll, valuation, inventory, and dedicated support.</p>
+                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Dedicated Cloud</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">Dedicated server resources, private VM clusters, and custom encryption key custody.</p>
               </div>
 
               <div className="mb-8">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-black text-white">Custom</span>
-                  <span className="text-xs text-slate-500 font-semibold">/ dedicated quote</span>
+                  <span className="text-xs text-slate-500 font-semibold">/ dedicated instances</span>
                 </div>
-                <p className="text-[10px] text-slate-600 mt-1">
-                  White-glove onboarding for {students.toLocaleString('en-IN')} students & {staff} staff
+                <p className="text-[10px] text-slate-650 mt-1">
+                  Self-hosted VMs / air-gapped options
                 </p>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Professional',
-                  'Staff payroll & salary structure',
-                  'Valuation & anonymous grading',
-                  'Inventory reorders & supplier logs',
-                  'Dedicated account manager',
-                  'Priority support & custom SLA',
-                  'Custom integrations & API access',
+                  'Unlimited mailboxes and storage thresholds',
+                  'Your own private cluster VM infrastructure',
+                  'Isolated high-availability database cluster setup',
+                  'Custom encryption key custody integrations',
+                  'Developer API gateways & custom webhook links',
+                  'Dedicated support manager & custom SLA agreements',
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-xs text-slate-400">
                     <CheckCircle className="w-3.5 h-3.5 text-[#E27000] flex-shrink-0 mt-0.5" />
@@ -625,7 +602,7 @@ export default function CampusNexus() {
               </ul>
 
               <a
-                href={`mailto:sales@polynexus.in?subject=CampusNexus Enterprise Plan Enquiry&body=Hello,%0A%0AWe are interested in the Enterprise (Full Automation) Plan for ${students} students and ${staff} staff (${billingPeriod}).%0A%0APlease send us a complete proposal with all modules, payroll integration, and dedicated support options.`}
+                href={`mailto:sales@polynexus.in?subject=PolyMX Dedicated Cloud Plan Enquiry&body=Hello,%0A%0AWe are interested in the PolyMX Dedicated Cloud Plan for ${users} users with ${quota} GB storage per user (${billingPeriod}).%0A%0APlease contact us to coordinateVM configurations.`}
                 className="group/btn relative block text-center w-full py-3.5 rounded-xl font-bold tracking-wide uppercase text-xs overflow-hidden"
                 style={{
                   background: 'transparent',
@@ -644,7 +621,7 @@ export default function CampusNexus() {
           {/* Trust strip */}
           <div className="text-center mt-12">
             <p className="text-[11px] text-slate-600 leading-relaxed">
-              No credit card required · Proposal delivered within 24 hours · Cancel anytime · Free branded email on all plans
+              No credit card required · Free consultation & migration guide · Full databases encryption at rest
             </p>
           </div>
         </div>

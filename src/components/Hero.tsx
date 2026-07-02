@@ -1,30 +1,17 @@
-import { ArrowRight, Play, Cpu, Database, Globe, Zap, Sparkles, Activity } from 'lucide-react';
+import { ArrowRight, Play, Cpu, Database, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import cognitiveMockup from '../assets/cognitive_query.png';
-import atlasMockup from '../assets/atlas_sync.png';
-import aegisMockup from '../assets/aegis_proxy.png';
-import pench from '../assets/projects/pench.png';
+import campusScreenshot from '../assets/campus_screenshot.png';
+import mailScreenshot from '../assets/mail_screenshot.png';
+import viteBridgeMockup from '../assets/vite_bridge.png';
+import neuroflowMockup from '../assets/neuroflow.png';
 import { useState, useEffect } from 'react';
-import { fetchProjects, fetchHeroInfo, getIconComponent, type Project, type HeroInfo } from '../api';
+import { fetchHeroInfo, getIconComponent, type HeroInfo } from '../api';
 
 export default function Hero() {
   const [activeProjectIdx, setActiveProjectIdx] = useState(0);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [heroInfo, setHeroInfo] = useState<HeroInfo | null>(null);
 
   useEffect(() => {
-    fetchProjects()
-      .then((data) => {
-        // filter projects that have a file field (designated for Hero mockups)
-        const heroProjs = data.filter((p) => p.file);
-        if (heroProjs.length > 0) {
-          setProjects(heroProjs);
-        }
-      })
-      .catch((err) => {
-        console.error('Error fetching hero projects:', err);
-      });
-
     fetchHeroInfo()
       .then((data) => {
         setHeroInfo(data);
@@ -34,47 +21,51 @@ export default function Hero() {
       });
   }, []);
 
-  const staticProjects: Project[] = [
+  const staticProjects = [
     {
-      id: 99906,
-      title: 'Cognitive Query API',
-      image: pench,
-      file: 'cognitive-query-api.sh',
-      desc: 'Edge-rendered semantic vector indexing console',
-      metric: '0.15ms resolution',
+      id: 1,
+      title: 'CampusNexus',
+      image: campusScreenshot,
+      desc: 'All-in-one university administrative ecosystem and student management database.',
+      metric: '500+ Students Min',
       icon: Cpu,
-      category: 'ai',
-      tech: [],
-      metricLabel: 'Vector Resolution'
+      link: '/campusnexus',
+      file: 'campus-nexus-erp.sh'
     },
     {
-      id: 99907,
-      title: 'Atlas DB Sync Tool',
-      image: atlasMockup,
-      file: 'atlas-db-sync.sh',
-      desc: 'Active-active cloud cluster transactional log synchronizer',
-      metric: '100% ACID consistency',
+      id: 2,
+      title: 'PolyMX Suite',
+      image: mailScreenshot,
+      desc: 'Secure Zoho/Google Workspace alternative with database-level AES encryption.',
+      metric: 'AES-256 Encrypted',
       icon: Database,
-      category: 'devtools',
-      tech: [],
-      metricLabel: 'ACID Consistency'
+      link: '/polymx',
+      file: 'polymx-collaboration.sh'
     },
     {
-      id: 99908,
-      title: 'Aegis Proxy Layer',
-      image: aegisMockup,
-      file: 'aegis-proxy-gateway.sh',
-      desc: 'Serverless DNS validation and DDOS prevention portal',
-      metric: '48Tbps mitigation cap',
+      id: 3,
+      title: 'Logistics Suite',
+      image: viteBridgeMockup,
+      desc: 'Last-mile delivery and subscription ERP with automated route solvers.',
+      metric: '₹29 starting rate',
       icon: Globe,
-      category: 'infra',
-      tech: [],
-      metricLabel: 'Cap Mitigation'
+      link: '/logistics',
+      file: 'logistics-route-solver.sh'
+    },
+    {
+      id: 4,
+      title: 'Custom Solutions',
+      image: neuroflowMockup,
+      desc: 'Bespoke enterprise dashboards, native mobile apps, and security pipelines.',
+      metric: 'Tailored Scope',
+      icon: Cpu,
+      link: '/custom',
+      file: 'custom-software-scoping.sh'
     }
   ];
 
-  const currentProjects = projects.length > 0 ? projects : staticProjects;
-  const current = currentProjects[activeProjectIdx] || currentProjects[0];
+  const currentProjects = staticProjects;
+  const current = currentProjects[activeProjectIdx];
 
   const getIconColor = (iconComponent: any) => {
     if (iconComponent === Database) return 'text-[#E27000]';
@@ -123,20 +114,20 @@ export default function Hero() {
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <a
-                href={heroInfo?.cta1_link || "#contact"}
+              <Link
+                to={heroInfo?.cta1_link || "/#contact"}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-secondary text-primary hover:bg-[#35b399] font-bold px-8 py-4 rounded-xl transition-all duration-250 hover:-translate-y-1 hover:shadow-xl hover:shadow-secondary/25 shadow-lg shadow-secondary/15 text-[13px]"
               >
                 {heroInfo?.cta1_text || "Get Your Custom Solution"}
                 <ArrowRight className="w-5 h-5" />
-              </a>
-              <a
-                href={heroInfo?.cta2_link || "#services"}
+              </Link>
+              <Link
+                to={heroInfo?.cta2_link || "/#services"}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border border-slate-200/80 text-slate-700 hover:bg-slate-50 hover:text-primary font-semibold px-8 py-4 rounded-xl transition-all duration-250 hover:-translate-y-1 shadow-sm hover:shadow-md text-[13px]"
               >
                 <Play className="w-4 h-4 text-accent fill-accent" />
                 {heroInfo?.cta2_text || "View Our Services"}
-              </a>
+              </Link>
             </div>
 
             {/* Trust Indicators */}
@@ -185,9 +176,9 @@ export default function Hero() {
 
               {/* Mockup Presentation */}
               <Link 
-                to={`/project/${current.id}`}
+                to={current.link}
                 className="block relative z-10 aspect-video w-full bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden shadow-inner shadow-black/80 group-hover/card:border-secondary/30 transition-all duration-300"
-                title={`View ${current.title} case study`}
+                title={`View ${current.title}`}
               >
                 <div className="absolute inset-0 bg-gradient-to-tr from-secondary/5 to-accent/5 opacity-40 pointer-events-none z-10" />
                 <img
@@ -210,7 +201,7 @@ export default function Hero() {
                         : 'text-slate-500 hover:text-slate-850 hover:bg-slate-100/40'
                         }`}
                     >
-                      {proj.title.replace(' Tool', '').replace(' API', '').replace(' Layer', '').replace(' Decentralized Proxy', ' Proxy')}
+                      {proj.title}
                     </button>
                   ))}
                 </div>

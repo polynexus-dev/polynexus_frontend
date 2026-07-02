@@ -8,7 +8,19 @@ import {
   FolderGit,
   HelpCircle,
   Sparkles,
-  Activity
+  Activity,
+  Award,
+  Users,
+  Target,
+  ShieldCheck,
+  Lightbulb,
+  Heart,
+  MessageSquare,
+  Search,
+  Code,
+  Rocket,
+  Headphones,
+  CheckCircle2
 } from 'lucide-react';
 
 // Map string icon names from the database to actual Lucide component imports
@@ -22,7 +34,19 @@ const iconMap: { [key: string]: any } = {
   FolderGit,
   HelpCircle,
   Sparkles,
-  Activity
+  Activity,
+  Award,
+  Users,
+  Target,
+  ShieldCheck,
+  Lightbulb,
+  Heart,
+  MessageSquare,
+  Search,
+  Code,
+  Rocket,
+  Headphones,
+  CheckCircle2
 };
 
 export function getIconComponent(iconName: string): any {
@@ -113,6 +137,15 @@ export interface HeroInfo {
   trust_indicators: Array<{ label: string; value: string; icon: string; color: string }>;
 }
 
+export interface AboutInfo {
+  title_prefix: string;
+  title_highlight: string;
+  subtitle: string;
+  stats: Array<{ value: string; label: string; icon: string }>;
+  values: Array<{ title: string; desc: string; icon: string; color: string; bg: string }>;
+  team: Array<{ name: string; role: string; desc: string; initials: string; color: string }>;
+}
+
 // Authentication Storage Helpers
 export function getStoredToken(): string | null {
   return localStorage.getItem('admin_token');
@@ -132,15 +165,24 @@ export function clearStoredAuth() {
   localStorage.removeItem('admin_username');
 }
 
-// Helper for sending bearer tokens
-function getAuthHeaders() {
+// Centralized fetch wrapper to enforce credentials (cookies) and Authorization headers
+async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = getStoredToken();
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+  const headers = new Headers(options.headers);
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  
+  return fetch(url, {
+    ...options,
+    headers,
+    credentials: 'include'
+  });
 }
 
 // API Authentication Request
 export async function loginAdmin(username: string, password: string): Promise<{ token: string; username: string }> {
-  const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/admin/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password })
@@ -156,7 +198,7 @@ export async function loginAdmin(username: string, password: string): Promise<{ 
 
 // Public API Fetch Functions
 export async function fetchServices(): Promise<Service[]> {
-  const response = await fetch(`${API_BASE_URL}/api/services`);
+  const response = await apiFetch(`${API_BASE_URL}/api/services`);
   if (!response.ok) throw new Error('Failed to fetch services');
   const data = await response.json();
   return data.map((s: any) => ({
@@ -166,7 +208,7 @@ export async function fetchServices(): Promise<Service[]> {
 }
 
 export async function fetchProjects(): Promise<Project[]> {
-  const response = await fetch(`${API_BASE_URL}/api/projects`);
+  const response = await apiFetch(`${API_BASE_URL}/api/projects`);
   if (!response.ok) throw new Error('Failed to fetch projects');
   const data = await response.json();
   return data.map((p: any) => ({
@@ -176,7 +218,7 @@ export async function fetchProjects(): Promise<Project[]> {
 }
 
 export async function fetchProject(id: number | string): Promise<Project> {
-  const response = await fetch(`${API_BASE_URL}/api/projects/${id}/detail`);
+  const response = await apiFetch(`${API_BASE_URL}/api/projects/${id}/detail`);
   if (!response.ok) throw new Error('Failed to fetch project details');
   const p = await response.json();
   return {
@@ -186,13 +228,13 @@ export async function fetchProject(id: number | string): Promise<Project> {
 }
 
 export async function fetchTestimonials(): Promise<Testimonial[]> {
-  const response = await fetch(`${API_BASE_URL}/api/testimonials`);
+  const response = await apiFetch(`${API_BASE_URL}/api/testimonials`);
   if (!response.ok) throw new Error('Failed to fetch testimonials');
   return response.json();
 }
 
 export async function fetchFAQs(): Promise<FAQItem[]> {
-  const response = await fetch(`${API_BASE_URL}/api/faqs`);
+  const response = await apiFetch(`${API_BASE_URL}/api/faqs`);
   if (!response.ok) throw new Error('Failed to fetch FAQs');
   return response.json();
 }
@@ -201,29 +243,45 @@ export async function fetchBlogPosts(searchQuery: string = ''): Promise<BlogPost
   const url = searchQuery 
     ? `${API_BASE_URL}/api/blog/posts?search=${encodeURIComponent(searchQuery)}`
     : `${API_BASE_URL}/api/blog/posts`;
-  const response = await fetch(url);
+  const response = await apiFetch(url);
   if (!response.ok) throw new Error('Failed to fetch blog posts');
   return response.json();
 }
 
 export async function fetchContactInfo(): Promise<ContactInfo> {
-  const response = await fetch(`${API_BASE_URL}/api/settings/contact`);
+  const response = await apiFetch(`${API_BASE_URL}/api/settings/contact`);
   if (!response.ok) throw new Error('Failed to fetch contact details');
   return response.json();
 }
 
 export async function fetchHeroInfo(): Promise<HeroInfo> {
-  const response = await fetch(`${API_BASE_URL}/api/settings/hero`);
+  const response = await apiFetch(`${API_BASE_URL}/api/settings/hero`);
   if (!response.ok) throw new Error('Failed to fetch hero section details');
+  return response.json();
+}
+
+export async function fetchAboutInfo(): Promise<AboutInfo> {
+  const response = await apiFetch(`${API_BASE_URL}/api/settings/about`);
+  if (!response.ok) throw new Error('Failed to fetch About page details');
+  return response.json();
+}
+
+export async function updateAboutInfo(data: Partial<AboutInfo>): Promise<any> {
+  const response = await apiFetch(`${API_BASE_URL}/api/settings/about/update`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error('Failed to update About page settings');
   return response.json();
 }
 
 // Protected CRUD Methods for Dashboard
 
 export async function createService(data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/services/create`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/services/create`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -234,9 +292,9 @@ export async function createService(data: any): Promise<any> {
 }
 
 export async function updateService(id: string, data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/services/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/services/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -247,9 +305,8 @@ export async function updateService(id: string, data: any): Promise<any> {
 }
 
 export async function deleteService(id: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/services/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders()
+  const response = await apiFetch(`${API_BASE_URL}/api/services/${id}`, {
+    method: 'DELETE'
   });
   if (!response.ok) {
     const err = await response.json();
@@ -260,9 +317,9 @@ export async function deleteService(id: string): Promise<any> {
 
 // Projects CRUD
 export async function createProject(data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/projects/create`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/projects/create`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -273,9 +330,9 @@ export async function createProject(data: any): Promise<any> {
 }
 
 export async function updateProject(id: number, data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/projects/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -286,9 +343,8 @@ export async function updateProject(id: number, data: any): Promise<any> {
 }
 
 export async function deleteProject(id: number): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders()
+  const response = await apiFetch(`${API_BASE_URL}/api/projects/${id}`, {
+    method: 'DELETE'
   });
   if (!response.ok) {
     const err = await response.json();
@@ -299,9 +355,9 @@ export async function deleteProject(id: number): Promise<any> {
 
 // Testimonials CRUD
 export async function createTestimonial(data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/testimonials/create`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/testimonials/create`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -312,9 +368,9 @@ export async function createTestimonial(data: any): Promise<any> {
 }
 
 export async function updateTestimonial(id: number, data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/testimonials/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/testimonials/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -325,9 +381,8 @@ export async function updateTestimonial(id: number, data: any): Promise<any> {
 }
 
 export async function deleteTestimonial(id: number): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/testimonials/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders()
+  const response = await apiFetch(`${API_BASE_URL}/api/testimonials/${id}`, {
+    method: 'DELETE'
   });
   if (!response.ok) {
     const err = await response.json();
@@ -338,9 +393,9 @@ export async function deleteTestimonial(id: number): Promise<any> {
 
 // FAQs CRUD
 export async function createFAQ(data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/faqs/create`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/faqs/create`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -351,9 +406,9 @@ export async function createFAQ(data: any): Promise<any> {
 }
 
 export async function updateFAQ(id: number, data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/faqs/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/faqs/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -364,9 +419,8 @@ export async function updateFAQ(id: number, data: any): Promise<any> {
 }
 
 export async function deleteFAQ(id: number): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/faqs/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders()
+  const response = await apiFetch(`${API_BASE_URL}/api/faqs/${id}`, {
+    method: 'DELETE'
   });
   if (!response.ok) {
     const err = await response.json();
@@ -377,9 +431,9 @@ export async function deleteFAQ(id: number): Promise<any> {
 
 // Blog Posts CRUD
 export async function createBlogPost(data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/blog/posts/create`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/blog/posts/create`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -390,9 +444,9 @@ export async function createBlogPost(data: any): Promise<any> {
 }
 
 export async function updateBlogPost(id: number, data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/blog/posts/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -403,9 +457,8 @@ export async function updateBlogPost(id: number, data: any): Promise<any> {
 }
 
 export async function deleteBlogPost(id: number): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders()
+  const response = await apiFetch(`${API_BASE_URL}/api/blog/posts/${id}`, {
+    method: 'DELETE'
   });
   if (!response.ok) {
     const err = await response.json();
@@ -416,9 +469,9 @@ export async function deleteBlogPost(id: number): Promise<any> {
 
 // Settings Update
 export async function updateContactInfo(data: any): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/settings/contact/update`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/settings/contact/update`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -429,9 +482,9 @@ export async function updateContactInfo(data: any): Promise<any> {
 }
 
 export async function updateHeroInfo(data: HeroInfo): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/settings/hero/update`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/settings/hero/update`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
   if (!response.ok) {
@@ -454,7 +507,7 @@ export interface Enquiry {
 }
 
 export async function createEnquiry(data: { name: string; email: string; company?: string; message: string }): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/enquiries/create`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/enquiries/create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
@@ -467,17 +520,14 @@ export async function createEnquiry(data: { name: string; email: string; company
 }
 
 export async function fetchEnquiries(): Promise<Enquiry[]> {
-  const response = await fetch(`${API_BASE_URL}/api/enquiries`, {
-    headers: getAuthHeaders()
-  });
+  const response = await apiFetch(`${API_BASE_URL}/api/enquiries`);
   if (!response.ok) throw new Error('Failed to fetch enquiries');
   return response.json();
 }
 
 export async function deleteEnquiry(id: number): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/enquiries/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders()
+  const response = await apiFetch(`${API_BASE_URL}/api/enquiries/${id}`, {
+    method: 'DELETE'
   });
   if (!response.ok) {
     const err = await response.json();
@@ -487,9 +537,9 @@ export async function deleteEnquiry(id: number): Promise<any> {
 }
 
 export async function replyToEnquiry(id: number, replyMessage: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/api/enquiries/${id}/reply`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/enquiries/${id}/reply`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reply_message: replyMessage })
   });
   if (!response.ok) {

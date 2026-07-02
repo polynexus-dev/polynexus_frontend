@@ -2,16 +2,14 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   CheckCircle,
   Users,
-  Shield,
-  Clock,
-  Navigation,
-  CreditCard,
-  Mail,
-  UserCheck
+  Lock,
+  Calendar,
+  Truck,
+  Camera,
+  Compass
 } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
-
 
 interface CardData {
   icon: React.ReactNode;
@@ -23,71 +21,47 @@ interface CardData {
   note: string;
 }
 
-/* ─────────────────────────────────────────────
-   FeatureCard — Premium interactive card with:
-   • Cursor-tracking 3D perspective tilt
-   • Radial gradient glow following the pointer
-   • Animated accent top-bar that scales on hover
-   • Staggered IntersectionObserver scroll reveal
-   ───────────────────────────────────────────── */
 function FeatureCard({ card, index }: { card: CardData; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Staggered scroll reveal via IntersectionObserver
   useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setTimeout(() => setIsVisible(true), index * 120);
-          observer.unobserve(el);
+          setIsVisible(true);
+          observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [index]);
 
-  // 3D tilt + glow tracking
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = cardRef.current;
-    const glow = glowRef.current;
-    if (!el || !glow) return;
-
-    const rect = el.getBoundingClientRect();
+    if (!cardRef.current || !glowRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
 
-    // Subtle tilt — max 4deg for sophistication
-    const rotateX = ((y - centerY) / centerY) * -4;
-    const rotateY = ((x - centerX) / centerX) * 4;
-
-    el.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.02)`;
-
-    // Move the glow to follow cursor
-    glow.style.background = `radial-gradient(300px circle at ${x}px ${y}px, ${card.accent}18, transparent 70%)`;
+    glowRef.current.style.background = `radial-gradient(350px circle at ${x}px ${y}px, ${card.accent}12, transparent 80%)`;
   }, [card.accent]);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    if (cardRef.current) {
-      cardRef.current.style.transition = 'transform 0.15s ease-out, box-shadow 0.3s ease';
-    }
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    if (cardRef.current) {
-      cardRef.current.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease';
-      cardRef.current.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)';
-    }
     if (glowRef.current) {
       glowRef.current.style.background = 'transparent';
     }
@@ -112,7 +86,7 @@ function FeatureCard({ card, index }: { card: CardData; index: number }) {
         border: `1px solid ${isHovered ? card.accent + '30' : 'rgba(226,232,240,0.8)'}`,
       }}
     >
-      {/* Accent top-bar — scales from center on hover */}
+      {/* Accent top-bar */}
       <div
         className="absolute top-0 left-0 right-0 h-[3px]"
         style={{
@@ -174,7 +148,7 @@ function FeatureCard({ card, index }: { card: CardData; index: number }) {
         </ul>
       </div>
 
-      {/* Superiority Note footer */}
+      {/* Operations note footer */}
       <div className="relative z-10 px-8 pb-8 mt-auto">
         <div
           className="rounded-2xl p-5"
@@ -188,7 +162,7 @@ function FeatureCard({ card, index }: { card: CardData; index: number }) {
             className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
             style={{ color: card.accent }}
           >
-            🔒 Superiority Note
+            📈 Operational Yield
           </span>
           <p className="text-[11px] leading-relaxed text-slate-500">{card.note}</p>
         </div>
@@ -197,18 +171,20 @@ function FeatureCard({ card, index }: { card: CardData; index: number }) {
   );
 }
 
-export default function CampusNexus() {
-  const [students, setStudents] = useState<number>(1000);
-  const [staff, setStaff] = useState<number>(60);
+export default function Logistics() {
+  const [customers, setCustomers] = useState<number>(1000);
+  const [routes, setRoutes] = useState<number>(10);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
-  // Math logic
   const isAnnual = billingPeriod === 'annual';
 
-  // Core base price
-  const coreRate = isAnnual ? 600.00 : 60.00;
-  const coreTotal = students * coreRate;
+  // Starter rate definitions (₹29/customer/mo or ₹240/customer/yr)
+  const starterBasePrice = isAnnual ? 240.00 : 29.00;
+  const starterTotal = customers * starterBasePrice;
 
+  // Professional rate definitions (₹49/customer/mo or ₹390/customer/yr)
+  const proBasePrice = isAnnual ? 390.00 : 49.00;
+  const proTotal = customers * proBasePrice;
 
   // Scroll to top on mount
   useEffect(() => {
@@ -222,25 +198,58 @@ export default function CampusNexus() {
       {/* Hero section */}
       <section className="relative pt-40 pb-20 overflow-hidden bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50">
         {/* Soft abstract blur halos */}
-        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-purple-200/30 rounded-full blur-[120px] -z-10" />
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-teal-200/20 rounded-full blur-[120px] -z-10" />
         <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#45C7AC]/10 rounded-full blur-[100px] -z-10" />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#010B33]/5 border border-[#010B33]/10 text-[#010B33] text-xs font-bold uppercase tracking-wider mb-6">
             <span className="w-1.5 h-1.5 bg-[#45C7AC] rounded-full animate-pulse" />
-            Enterprise ERP Suite
+            Last-Mile Logistics ERP
           </span>
           
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight font-display mb-6 text-[#010B33] leading-none">
-            Empower Your Institution with <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-[#010B33] via-purple-900 to-[#45C7AC] bg-clip-text text-transparent">
-              CampusNexus
+            Automate Your Last-Mile <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-[#010B33] via-emerald-900 to-[#45C7AC] bg-clip-text text-transparent">
+              Logistics Suite
             </span>
           </h1>
           
           <p className="max-w-3xl mx-auto text-lg sm:text-xl text-slate-650 font-light leading-relaxed mb-10">
-            A premium, highly secure, and modular university administration ecosystem designed to automate operations, secure records, and scale pricing flexibly.
+            A secure, multi-city logistics and subscription management suite built for high-frequency recurrent operations. Optimize routing pipelines, monitor dispatches, and verify drop-offs with absolute data isolation.
           </p>
+        </div>
+      </section>
+
+      {/* Client Spotlight Section */}
+      <section className="py-16 bg-[#020d29] text-white overflow-hidden relative border-y border-slate-900">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#45C7AC]/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <div className="md:col-span-4 text-center md:text-left">
+              <span className="text-[10px] font-bold text-[#45C7AC] uppercase tracking-widest">Client Spotlight</span>
+              <h3 className="text-2xl font-extrabold font-display text-white mt-1.5 mb-3">Trusted by Pench Foods</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Pench Foods utilizes our logistics platform daily to power their multi-city fresh dairy and subscription logistics network, running optimized routes with zero dispatch delays.
+              </p>
+            </div>
+            <div className="md:col-span-8">
+              <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 relative">
+                <div className="absolute top-6 right-8 text-5xl text-slate-700 font-serif pointer-events-none">“</div>
+                <blockquote className="text-sm font-medium text-slate-200 leading-relaxed mb-6">
+                  Before implementing this logistics platform, route optimization was a manual headache every morning. Now, the route planning is completely automated. Our drivers follow pre-optimized paths on their apps, and the geotagged proof-of-delivery ensures our customers get their fresh products precisely on time. It has reduced our daily delivery preparation by over 2 hours.
+                </blockquote>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#45C7AC]/20 flex items-center justify-center text-xs font-bold text-[#45C7AC]">
+                    PF
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-white">Operations Director</h5>
+                    <p className="text-[10px] text-slate-500">Pench Foods Dairy Division</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -248,102 +257,102 @@ export default function CampusNexus() {
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-20">
           <span className="text-xs font-bold text-[#45C7AC] uppercase tracking-widest bg-[#45C7AC]/10 px-3.5 py-1.5 rounded-full">
-            Product Features
+            ERP Features
           </span>
           <h2 className="text-3xl font-extrabold tracking-tight font-display sm:text-4xl text-[#010B33] mt-4 mb-4">
-            Six Pillars of Campus Automation
+            Built for Subscription & Logistics Scale
           </h2>
           <p className="text-slate-500 text-base max-w-2xl mx-auto">
-            Discover how CampusNexus delivers unparalleled operational integrity without technical complexity.
+            From overnight order queues to geotagged drop-offs, our Logistics ERP connects your dispatch team directly to the road.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
           {[
             {
-              icon: <Shield className="w-5 h-5" />,
-              title: 'Core Registrar Hub',
-              accent: '#7c3aed',
-              accentBg: 'rgba(124,58,237,0.08)',
-              accentBorder: 'rgba(124,58,237,0.15)',
+              icon: <Truck className="w-5 h-5" />,
+              title: 'Dynamic Routing Solver',
+              accent: '#3b82f6',
+              accentBg: 'rgba(59,130,246,0.08)',
+              accentBorder: 'rgba(59,130,246,0.15)',
               specs: [
-                "Secure isolated workspace separating each college's private registers.",
-                'Detailed registrar directory mapping student and faculty profiles.',
-                'Verification onboarding delivering secure links to student profiles.',
-                'Authorized device locks verifying security browser parameters.',
+                'Algorithmic solver calculating shortest road trajectories.',
+                'Sub-zone route optimizations keeping travel distance minimal.',
+                'Dynamic route updates pushing adjustments straight to drivers.',
+                'Fuel consumption optimization mapping active paths.'
               ],
-              note: 'Traditional college software systems mix account data and are vulnerable to security issues. CampusNexus segregates account registers entirely and enforces authorized device locks.',
+              note: 'Manual routing wastes fuel and time. Our system calculates the absolute shortest route sequence for each driver based on real-time zone parameters.'
             },
             {
-              icon: <UserCheck className="w-5 h-5" />,
-              title: 'Face Attendance',
-              accent: '#45C7AC',
-              accentBg: 'rgba(69,199,172,0.08)',
-              accentBorder: 'rgba(69,199,172,0.15)',
+              icon: <Calendar className="w-5 h-5" />,
+              title: 'Subscription Engine',
+              accent: '#10b981',
+              accentBg: 'rgba(16,185,129,0.08)',
+              accentBorder: 'rgba(16,185,129,0.15)',
               specs: [
-                'Facial check-ins backed by real-time interactive face verification check-ins.',
-                'Location verification zones limiting check-in zones to classroom blocks.',
-                'Lecturer control panels establishing dynamic session timers.',
-                'Room boundary check-ins mapping physical classroom blocks.',
+                'Flexible scheduling patterns (daily, alternate, custom weekdays).',
+                'One-tap vacation suspension pausing active cycles instantly.',
+                'Automatic night-run order queue creation at 4:00 AM.',
+                'Proportionate billing calculators tracking active deliveries.'
               ],
-              note: 'Eliminates proxy check-ins. By combining face print matching, location verification, and lecturer timers, students must be physically present inside the class to check in.',
+              note: 'Keeps track of subscription suspensions automatically. Active deliveries resume on exact target dates without administrative overrides.'
             },
             {
-              icon: <Clock className="w-5 h-5" />,
-              title: 'Salary & Payroll',
-              accent: '#E27000',
-              accentBg: 'rgba(226,112,0,0.08)',
-              accentBorder: 'rgba(226,112,0,0.15)',
+              icon: <Compass className="w-5 h-5" />,
+              title: 'Live Fleet Tracking',
+              accent: '#f59e0b',
+              accentBg: 'rgba(245,158,11,0.08)',
+              accentBorder: 'rgba(245,158,11,0.15)',
               specs: [
-                'Flexible payroll templates mapping basic pay, allowances, and tax deduction parameters.',
-                'Direct attendance synchronization linking face check-in logs to monthly payouts.',
-                'Absence deduction automation calculating gross adjustments per missing day.',
-                'Leave balance tracking adjusting duty leaves, medical lists, and casual balance pools.',
+                'Real-time vehicle position streams on dispatch consoles.',
+                'Historical breadcrumb paths showing actual routes taken.',
+                'Estimated times of arrival (ETA) updating dynamically.',
+                'Automatic alarms notifying if drivers leave assigned zones.'
               ],
-              note: 'Most payroll tools require manual exports. CampusNexus synchronizes face logs directly with salary allocations, reducing monthly payroll calculations to a single click.',
+              note: 'Tracks vehicles actively. Dispatch panels display real-time movement histories alongside delivery progress logs.'
             },
             {
-              icon: <CreditCard className="w-5 h-5" />,
-              title: 'Accounts & Fee Ledger',
-              accent: '#2563eb',
-              accentBg: 'rgba(37,99,235,0.08)',
-              accentBorder: 'rgba(37,99,235,0.15)',
+              icon: <Camera className="w-5 h-5" />,
+              title: 'Geotagged Delivery Proof',
+              accent: '#8b5cf6',
+              accentBg: 'rgba(139,92,246,0.08)',
+              accentBorder: 'rgba(139,92,246,0.15)',
               specs: [
-                'Custom fee category templates separating tuition, transport, hostel, and lab logs.',
-                'Bulk invoice rollout pushing payment configs to entire semesters or branches.',
-                'Proportional splitting rules dividing payments across sub-items automatically.',
-                'Flexible banking integrations tracking cards, Net Banking, and online payments.',
+                'Encrypted drop-off photo captures within delivery portals.',
+                'Automatic coordinate tagging stamps locked at the delivery site.',
+                'Real-time customer notifications showing delivery proof.',
+                'Audit records mapping exact distance variances.'
               ],
-              note: 'Traditional ledgers require manual splitting. CampusNexus distributes payments proportionally, keeping accounts ledger reconciliations automated and clean.',
+              note: 'Verifies deliveries instantly. Drivers must be within the geofenced coordinate perimeter to submit drop-off confirmations.'
             },
             {
-              icon: <Navigation className="w-5 h-5" />,
-              title: 'Transit & Digital Passes',
-              accent: '#0d9488',
-              accentBg: 'rgba(13,148,136,0.08)',
-              accentBorder: 'rgba(13,148,136,0.15)',
+              icon: <Users className="w-5 h-5" />,
+              title: 'Driver Zones & Persistence',
+              accent: '#ec4899',
+              accentBg: 'rgba(236,72,153,0.08)',
+              accentBorder: 'rgba(236,72,153,0.15)',
               specs: [
-                'Interactive route maps tracing live moving bus markers.',
-                'Real-time location updates tracking active bus status without lag.',
-                'Interactive stopped sequences mapping designated stop positions.',
-                'Boarding digital passes featuring custom colors and college logo center points.',
+                'Permanent driver assignments to geographical zones.',
+                'Zone boundary controls blocking deliveries outside domains.',
+                'Smart driver onboarding mapping regular delivery sequences.',
+                'Dynamic load sheets showing inventory quantities per van.'
               ],
-              note: 'Combines live route tracking, transit cost accounting, and digital boarding passes in a single system, removing the need for costly vehicle tracking hardware.',
+              note: 'Drivers assigned to permanent zones build familiarity with paths and regular customer schedules, resulting in 20% faster run times.'
             },
             {
-              icon: <Mail className="w-5 h-5" />,
-              title: 'Custom Domain Emails',
-              accent: '#059669',
-              accentBg: 'rgba(5,150,105,0.08)',
-              accentBorder: 'rgba(5,150,105,0.15)',
+              icon: <Lock className="w-5 h-5" />,
+              title: 'Confidential City Segregation',
+              accent: '#ef4444',
+              accentBg: 'rgba(239,68,68,0.08)',
+              accentBorder: 'rgba(239,68,68,0.15)',
               specs: [
-                'Free custom domain email addresses setup for both students and faculty.',
-                'Dedicated custom domain setup (e.g., student@yourcollege.edu.in) at no extra cost.',
-                'Strict registration domain restrictions blocking sign-ups outside of college domains.',
-                'Automated custom-branded notification templates for all official college emails.',
+                'Physical database separation isolating regional data folders.',
+                'Encrypted backend databases protecting customer addresses.',
+                'Audit registries tracking dispatch operators actions.',
+                'Secure mobile portal authentication codes.'
               ],
-              note: "Protects university login portals from external sign-ups while ensuring college notifications are delivered directly under the institution's own domain name.",
-            },
+              note: 'Ensures absolute corporate isolation. Operations records, customer lists, and financial reports from different regions are locked in isolated database schemas.'
+            }
           ].map((card, idx) => (
             <FeatureCard key={idx} card={card} index={idx} />
           ))}
@@ -364,53 +373,53 @@ export default function CampusNexus() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#45C7AC] opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#45C7AC]" />
               </span>
-              Special Introductory Offer
+              Enterprise Logistics Suite
             </span>
             <h2 className="text-3xl font-extrabold tracking-tight font-display sm:text-5xl text-white mt-4 mb-4">
-              Choose Your Plan
+              Choose Your Scale
             </h2>
             <p className="text-slate-400 text-base max-w-xl mx-auto">
-              Start lean, or go all-in. Every plan includes branded custom domain emails, face attendance, and 24/7 support.
+              Select a tier matching your daily operations limits. Request customized pricing metrics as your routes grow.
             </p>
           </div>
 
-          {/* Institution Size Bar */}
+          {/* User Count and Driver Scale Sliders */}
           <div className="max-w-3xl mx-auto bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 p-6 sm:p-8 rounded-3xl mb-16">
             <h3 className="text-sm font-bold font-display mb-6 flex items-center gap-2.5 text-slate-300">
               <div className="w-7 h-7 rounded-lg bg-[#45C7AC]/15 flex items-center justify-center">
                 <Users className="w-4 h-4 text-[#45C7AC]" />
               </div>
-              Tell us your institution size
+              Define your operational capacity
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div>
                 <div className="flex justify-between items-baseline mb-3">
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Students</label>
-                  <span className="text-xl font-black text-white tabular-nums">{students.toLocaleString('en-IN')}</span>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Customers Managed</label>
+                  <span className="text-xl font-black text-white tabular-nums">{customers.toLocaleString('en-IN')}</span>
                 </div>
                 <input
-                  type="range" min="500" max="10000" step="50" value={students}
-                  onChange={e => setStudents(Math.max(500, parseInt(e.target.value) || 500))}
+                  type="range" min="100" max="10000" step="100" value={customers}
+                  onChange={e => setCustomers(Math.max(100, parseInt(e.target.value) || 100))}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                  style={{ background: `linear-gradient(to right, #45C7AC 0%, #45C7AC ${((students - 500) / 9500) * 100}%, #1e293b ${((students - 500) / 9500) * 100}%, #1e293b 100%)` }}
+                  style={{ background: `linear-gradient(to right, #45C7AC 0%, #45C7AC ${((customers - 100) / 9900) * 100}%, #1e293b ${((customers - 100) / 9900) * 100}%, #1e293b 100%)` }}
                 />
                 <div className="flex justify-between text-[10px] text-slate-600 mt-1.5">
-                  <span>500</span><span>10,000</span>
+                  <span>100</span><span>10,000</span>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between items-baseline mb-3">
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Faculty & Staff</label>
-                  <span className="text-xl font-black text-white tabular-nums">{staff.toLocaleString('en-IN')}</span>
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Driver Routes</label>
+                  <span className="text-xl font-black text-white tabular-nums">{routes} Routes</span>
                 </div>
                 <input
-                  type="range" min="50" max="500" step="5" value={staff}
-                  onChange={e => setStaff(Math.max(50, parseInt(e.target.value) || 50))}
+                  type="range" min="5" max="100" step="5" value={routes}
+                  onChange={e => setRoutes(Math.max(5, parseInt(e.target.value) || 5))}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                  style={{ background: `linear-gradient(to right, #E27000 0%, #E27000 ${((staff - 50) / 450) * 100}%, #1e293b ${((staff - 50) / 450) * 100}%, #1e293b 100%)` }}
+                  style={{ background: `linear-gradient(to right, #E27000 0%, #E27000 ${((routes - 5) / 95) * 100}%, #1e293b ${((routes - 5) / 95) * 100}%, #1e293b 100%)` }}
                 />
                 <div className="flex justify-between text-[10px] text-slate-600 mt-1.5">
-                  <span>50</span><span>500</span>
+                  <span>5 Routes</span><span>100 Routes</span>
                 </div>
               </div>
             </div>
@@ -460,30 +469,32 @@ export default function CampusNexus() {
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgba(51,65,85,0.6)'; }}
             >
               <div className="mb-8">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Starter</span>
-                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Core Platform</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Perfect for smaller colleges getting started with digital campus management.</p>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Starter Hub</span>
+                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Regional Hub</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">Perfect for subscription businesses managing operations within a single city zone.</p>
               </div>
 
               <div className="mb-8">
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-xl text-slate-500 line-through font-semibold decoration-red-500/80 tabular-nums">₹{isAnnual ? '1,200' : '120'}</span>
-                  <span className="text-4xl font-black text-[#45C7AC] tabular-nums">₹{isAnnual ? '600' : '60'}</span>
-                  <span className="text-xs text-slate-500 font-semibold">/ student {isAnnual ? '/ year' : '/ month'}</span>
+                  <span className="text-xl text-slate-500 line-through font-semibold decoration-red-500/80 tabular-nums">₹{isAnnual ? '480' : '59'}</span>
+                  <span className="text-4xl font-black text-[#45C7AC] tabular-nums">₹{isAnnual ? '240' : '29'}</span>
+                  <span className="text-xs text-slate-500 font-semibold">/ customer {isAnnual ? '/ year' : '/ month'}</span>
                 </div>
-                <p className="text-[10px] text-slate-600 mt-1">
-                  Est. total: <span className="line-through decoration-red-500/40">₹{Math.round(coreTotal * 2.0).toLocaleString('en-IN')}</span> <span className="text-white font-semibold">₹{Math.round(coreTotal).toLocaleString('en-IN')}</span> {isAnnual ? '/yr' : '/mo'} for {students.toLocaleString('en-IN')} students
+                <p className="text-[10px] text-slate-650 mt-1">
+                  Est. total: <span className="line-through decoration-red-500/40">₹{Math.round(starterTotal * 2.0).toLocaleString('en-IN')}</span> <span className="text-white font-semibold">₹{Math.round(starterTotal).toLocaleString('en-IN')}</span> {isAnnual ? '/yr' : '/mo'}
                 </p>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  'Secure multi-tenant registrar',
-                  'Face attendance & location guard',
-                  'Schedule & assignment management',
-                  'Custom domain emails for students & faculty',
-                  'Authorized device security locks',
-                  'Basic reports & dashboards',
+                  `Up to ${customers.toLocaleString('en-IN')} active customers`,
+                  'Limited to 10 active driver routes (riders)',
+                  'Web dispatch dashboard console',
+                  'Android & iOS Driver apps included',
+                  'Android & iOS Customer portal apps',
+                  'Standard route optimization solver',
+                  'Subscription pause & vacation scheduling',
+                  'Standard coordinate delivery tracking',
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-xs text-slate-400">
                     <CheckCircle className="w-3.5 h-3.5 text-slate-600 flex-shrink-0 mt-0.5" />
@@ -493,7 +504,7 @@ export default function CampusNexus() {
               </ul>
 
               <a
-                href={`mailto:sales@polynexus.in?subject=CampusNexus Starter Plan Enquiry&body=Hello,%0A%0AWe are interested in the Starter Plan for ${students} students and ${staff} staff (${billingPeriod}).%0A%0APlease send us a proposal.`}
+                href={`mailto:sales@polynexus.in?subject=Logistics Starter Plan Enquiry&body=Hello,%0A%0AWe are interested in the Logistics Starter Plan for ${customers} active customers and ${routes} driver routes (${billingPeriod}).%0A%0APlease send us a subscription proposal.`}
                 className="group/btn relative block text-center w-full py-3.5 rounded-xl font-bold tracking-wide uppercase text-xs overflow-hidden"
                 style={{
                   background: 'transparent',
@@ -520,7 +531,6 @@ export default function CampusNexus() {
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 25px 60px -15px rgba(69,199,172,0.2)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 40px -10px rgba(69,199,172,0.12)'; }}
             >
-              {/* Recommended badge */}
               <div className="absolute top-0 right-6">
                 <div className="bg-[#45C7AC] text-[#010B33] text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-b-lg">
                   Most Popular
@@ -528,30 +538,34 @@ export default function CampusNexus() {
               </div>
 
               <div className="mb-8">
-                <span className="text-[10px] font-bold text-[#45C7AC] uppercase tracking-widest">Professional</span>
-                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Campus Suite</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">Ideal for mid-to-large institutions wanting fee management, bus tracking, and hostel operations.</p>
+                <span className="text-[10px] font-bold text-[#45C7AC] uppercase tracking-widest">Pro Dispatch</span>
+                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Multi-City Scale</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">For large subscription logistics setups operating across multiple zones and regional cities.</p>
               </div>
 
               <div className="mb-8">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black bg-gradient-to-r from-[#45C7AC] to-[#35b399] bg-clip-text text-transparent">Custom</span>
-                  <span className="text-xs text-slate-500 font-semibold">/ tailored quote</span>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-xl text-slate-500 line-through font-semibold decoration-red-500/80 tabular-nums">₹{isAnnual ? '780' : '99'}</span>
+                  <span className="text-4xl font-black text-[#45C7AC] tabular-nums">₹{isAnnual ? '390' : '49'}</span>
+                  <span className="text-xs text-slate-500 font-semibold">/ customer {isAnnual ? '/ year' : '/ month'}</span>
                 </div>
-                <p className="text-[10px] text-slate-600 mt-1">
-                  Based on {students.toLocaleString('en-IN')} students & selected modules
+                <p className="text-[10px] text-slate-650 mt-1">
+                  Est. total: <span className="line-through decoration-red-500/40">₹{Math.round(proTotal * 2.0).toLocaleString('en-IN')}</span> <span className="text-white font-semibold">₹{Math.round(proTotal).toLocaleString('en-IN')}</span> {isAnnual ? '/yr' : '/mo'}
                 </p>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  'Everything in Starter',
-                  'Fee collection & accounts ledger',
-                  'Bus routes & live location tracking',
-                  'Hostel & mess boarding manager',
-                  'Exams scheduler & seat planner',
-                  'Library circulation & catalog',
-                  'TPO recruitment & placements',
+                  `Up to ${customers.toLocaleString('en-IN')} active customers`,
+                  'Unlimited driver routes (riders) included',
+                  'Web dispatch dashboard console',
+                  'Android & iOS Driver apps included',
+                  'Android & iOS Customer portal apps',
+                  'Advanced algorithmic route optimization',
+                  'Real-time GPS vehicle location updates',
+                  'Mandatory geotagged proof-of-delivery photos',
+                  'Air-gapped database city segregation',
+                  'Multi-admin regional dispatcher panels',
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-xs text-slate-300">
                     <CheckCircle className="w-3.5 h-3.5 text-[#45C7AC] flex-shrink-0 mt-0.5" />
@@ -561,7 +575,7 @@ export default function CampusNexus() {
               </ul>
 
               <a
-                href={`mailto:sales@polynexus.in?subject=CampusNexus Professional Plan Enquiry&body=Hello,%0A%0AWe are interested in the Professional (Campus Suite) Plan for ${students} students and ${staff} staff (${billingPeriod}).%0A%0APlease send us a customized proposal with all included modules.`}
+                href={`mailto:sales@polynexus.in?subject=Logistics Professional Plan Enquiry&body=Hello,%0A%0AWe are interested in the Logistics Professional Plan for ${customers} active customers and ${routes} driver routes (${billingPeriod}).%0A%0APlease send us a customized proposal.`}
                 className="group/btn relative block text-center w-full py-3.5 rounded-xl font-black tracking-wide uppercase text-xs overflow-hidden"
                 style={{
                   background: 'linear-gradient(135deg, #45C7AC, #35b399)',
@@ -592,30 +606,33 @@ export default function CampusNexus() {
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgba(51,65,85,0.6)'; }}
             >
               <div className="mb-8">
-                <span className="text-[10px] font-bold text-[#E27000] uppercase tracking-widest">Enterprise</span>
-                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Full Automation</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">Complete ERP suite including payroll, valuation, inventory, and dedicated support.</p>
+                <span className="text-[10px] font-bold text-[#E27000] uppercase tracking-widest">Enterprise Custom</span>
+                <h3 className="text-xl font-extrabold font-display text-white mt-1 mb-2">Dedicated Infrastructure</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">Dedicated logistics server deployments, private geofenced boundaries, and KMS keys custody.</p>
               </div>
 
               <div className="mb-8">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-black text-white">Custom</span>
-                  <span className="text-xs text-slate-500 font-semibold">/ dedicated quote</span>
+                  <span className="text-xs text-slate-500 font-semibold">/ dedicated clusters</span>
                 </div>
-                <p className="text-[10px] text-slate-600 mt-1">
-                  White-glove onboarding for {students.toLocaleString('en-IN')} students & {staff} staff
+                <p className="text-[10px] text-slate-650 mt-1">
+                  Self-hosted VMs / air-gapped instances
                 </p>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   'Everything in Professional',
-                  'Staff payroll & salary structure',
-                  'Valuation & anonymous grading',
-                  'Inventory reorders & supplier logs',
-                  'Dedicated account manager',
-                  'Priority support & custom SLA',
-                  'Custom integrations & API access',
+                  'Unlimited active customers and driver routes',
+                  'Web dispatch dashboard console',
+                  'Android & iOS Driver apps included',
+                  'Android & iOS Customer portal apps',
+                  'Your own private cluster VM infrastructure',
+                  'Dedicated database cluster setup',
+                  'Custom encryption key custody integrations',
+                  'Developer API gateways & custom webhook integrations',
+                  'Dedicated support manager & custom SLA agreements',
                 ].map((f, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-xs text-slate-400">
                     <CheckCircle className="w-3.5 h-3.5 text-[#E27000] flex-shrink-0 mt-0.5" />
@@ -625,7 +642,7 @@ export default function CampusNexus() {
               </ul>
 
               <a
-                href={`mailto:sales@polynexus.in?subject=CampusNexus Enterprise Plan Enquiry&body=Hello,%0A%0AWe are interested in the Enterprise (Full Automation) Plan for ${students} students and ${staff} staff (${billingPeriod}).%0A%0APlease send us a complete proposal with all modules, payroll integration, and dedicated support options.`}
+                href={`mailto:sales@polynexus.in?subject=Logistics Dedicated Cloud Plan Enquiry&body=Hello,%0A%0AWe are interested in the Logistics Dedicated Cloud Plan for ${customers} active customers and ${routes} driver routes (${billingPeriod}).%0A%0APlease contact us to coordinate configurations.`}
                 className="group/btn relative block text-center w-full py-3.5 rounded-xl font-bold tracking-wide uppercase text-xs overflow-hidden"
                 style={{
                   background: 'transparent',
@@ -644,7 +661,7 @@ export default function CampusNexus() {
           {/* Trust strip */}
           <div className="text-center mt-12">
             <p className="text-[11px] text-slate-600 leading-relaxed">
-              No credit card required · Proposal delivered within 24 hours · Cancel anytime · Free branded email on all plans
+              No credit card required · Free consultation & migration guide · Full databases encryption at rest
             </p>
           </div>
         </div>

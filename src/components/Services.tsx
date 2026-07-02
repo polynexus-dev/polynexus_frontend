@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layers, Database, Shield, Zap, Terminal, ChevronRight, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { fetchServices, type Service } from '../api';
 
 export default function Services() {
@@ -173,13 +174,13 @@ export default function Services() {
                 >
                   Close Spec
                 </button>
-                <a
-                  href="#contact"
+                <Link
+                  to="/#contact"
                   onClick={() => setSelectedService(null)}
                   className="bg-secondary text-primary hover:bg-[#35b399] px-5 py-2.5 rounded-xl text-xs font-bold transition-colors"
                 >
                   Deploy Module
-                </a>
+                </Link>
               </div>
             </div>
           </div>

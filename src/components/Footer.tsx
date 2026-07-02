@@ -1,4 +1,5 @@
-import { MessageSquare, Globe, ArrowUpRight } from 'lucide-react';
+import { MessageSquare, Globe } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logoImg from '../assets/logo/logo.png';
 import { useState } from 'react';
 
@@ -22,15 +23,15 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div className='flex items-center '>
-              <a href="/" className="flex items-center gap-3 bg-white px-6 rounded-2xl ">
+              <Link to="/" className="flex items-center gap-3 bg-white px-6 py-2 rounded-2xl ">
                 <img src={logoImg} alt="Polynexus Logo" className="h-9 w-auto" />
                 <span className="text-lg font-bold tracking-tight text-primary">
                   Poly<span className="text-secondary">nexus</span>
                 </span>
-              </a>
+              </Link>
             </div>
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
-              Polynexus operates low-latency serverless, polymorphic database query platforms, and threat prevention proxies on high-performance WASM edge compute systems globally.
+              Polynexus operates secure cloud databases, high-integrity delivery dispatch ERP modules, school administrative panels, and bespoke logic systems.
             </p>
             {/* Socials */}
             <div className="flex gap-4">
@@ -55,26 +56,28 @@ export default function Footer() {
 
           {/* Links 1 */}
           <div className="lg:col-span-2 flex flex-col gap-4">
-            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Modules</span>
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Products</span>
             <div className="flex flex-col gap-2.5">
-              <a href="/#services" className="text-xs text-secondary/95 hover:text-white transition-colors">Serverless Pipelines</a>
-              <a href="/#services" className="text-xs text-secondary/95 hover:text-white transition-colors">Storage Engines</a>
-              <a href="/#services" className="text-xs text-secondary/95 hover:text-white transition-colors">Zero-Trust Shielding</a>
-              <a href="/#services" className="text-xs text-secondary/95 hover:text-white transition-colors">Edge Orchestrator</a>
+              <Link to="/campusnexus" className="text-xs text-secondary/95 hover:text-white transition-colors">CampusNexus</Link>
+              <Link to="/polymx" className="text-xs text-secondary/95 hover:text-white transition-colors">PolyMX Suite</Link>
+              <Link to="/logistics" className="text-xs text-secondary/95 hover:text-white transition-colors">Logistics ERP</Link>
+              <Link to="/custom" className="text-xs text-secondary/95 hover:text-white transition-colors">Custom Software</Link>
             </div>
           </div>
 
           {/* Links 2 */}
           <div className="lg:col-span-2 flex flex-col gap-4">
-            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Resources</span>
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Company</span>
             <div className="flex flex-col gap-2.5">
-              <a href="/#blog" className="text-xs text-secondary/95 hover:text-white transition-colors">Engineering Logs</a>
-              <a href="/#faq" className="text-xs text-secondary/95 hover:text-white transition-colors">FAQ & Specs</a>
-              <a href="https://vite.dev" target="_blank" className="text-xs text-secondary/95 hover:text-white transition-colors inline-flex items-center gap-0.5">
-                Vite Dev Server <ArrowUpRight className="w-3.5 h-3.5" />
+              <Link to="/about" className="text-xs text-secondary/95 hover:text-white transition-colors">About Us</Link>
+              <Link to="/#services" className="text-xs text-secondary/95 hover:text-white transition-colors">Services</Link>
+              <Link to="/#blog" className="text-xs text-secondary/95 hover:text-white transition-colors">News &amp; Logs</Link>
+              <Link to="/#faq" className="text-xs text-secondary/95 hover:text-white transition-colors">FAQ &amp; Specs</Link>
+              <a href="mailto:support@polynexus.in" className="text-xs text-secondary/95 hover:text-white transition-colors">
+                Support Desk
               </a>
-              <a href="https://react.dev" target="_blank" className="text-xs text-secondary/95 hover:text-white transition-colors inline-flex items-center gap-0.5">
-                React Framework <ArrowUpRight className="w-3.5 h-3.5" />
+              <a href="mailto:sales@polynexus.in" className="text-xs text-secondary/95 hover:text-white transition-colors">
+                Sales Scoping
               </a>
             </div>
           </div>

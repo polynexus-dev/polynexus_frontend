@@ -8,14 +8,17 @@ import {
   FolderGit,
   Zap,
   Shield,
-  ExternalLink,
-  Terminal,
   Layers,
   CheckCircle2,
   ArrowRight,
   Code,
   Sparkles,
-  X
+  X,
+  Mail,
+  Lock,
+  Key,
+  Fingerprint,
+  Check
 } from 'lucide-react';
 import { fetchProject, type Project } from '../api';
 import Header from './Header';
@@ -28,8 +31,9 @@ import atlasMockup from '../assets/atlas_sync.png';
 import aegisMockup from '../assets/aegis_proxy.png';
 import neuroflowMockup from '../assets/neuroflow.png';
 import viteBridgeMockup from '../assets/vite_bridge.png';
-import heliosMockup from '../assets/helios.png';
 import pench from '../assets/projects/pench.png';
+import mailScreenshot from '../assets/mail_screenshot.png';
+import campusScreenshot from '../assets/campus_screenshot.png';
 
 const SAMPLE_PRICING_TABLE_HTML = `<div class="max-w-4xl mx-auto my-4">
   <div class="grid grid-cols-1 md:grid-cols-3 gap-0 border border-slate-200 rounded-3xl overflow-hidden shadow-xs bg-white text-center">
@@ -93,23 +97,24 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
     id: 99901,
     title: 'Mail Service Software',
     category: 'polynexus',
-    desc: 'High-throughput enterprise mail server software supporting transactional relays and spam-filtering layers.',
+    desc: 'High-throughput enterprise secure mail server software supporting transactional relays, encrypted storage, and spam-filtering layers.',
     metric: '99.999%',
     metricLabel: 'Uptime Delivery',
     icon: Zap,
-    tech: ['Node.js', 'Redis', 'SMTP', 'Docker', 'Kubernetes'],
-    image: cognitiveMockup,
+    tech: ['Node.js', 'Redis', 'SMTP', 'Docker', 'Secure Relay', 'Cryptography'],
+    image: mailScreenshot,
     file: 'mail-delivery-service.sh',
-    longDesc: 'Our Mail Service Software provides an enterprise-ready SMTP transaction gateway tailored for massive scale. By separating incoming relays from outgoing transactional queues, we achieved a resilient routing architecture that tolerates sudden load bursts and external API latencies. Additionally, we integrated a signature-based real-time spam filter running directly on memory caches for negligible processing delay.',
+    longDesc: 'Polynexus Secure Mail Service is a military-grade secure email server software designed for ultimate privacy and high deliverability. Utilizing elliptic curve cryptography for storage, zero-exposure metadata search databases, and secure TLS gateways, your email data is protected from physical drive theft and network eavesdropping. Fully powered by an optimized proprietary high-throughput delivery network, it guarantees industry-leading deliverability to Gmail, Outlook, and other networks while maintaining a highly profitable, scalable operation.',
     benefits: [
-      'Ensures transactional messages are delivered instantly, boosting user trust.',
-      'Provides real-time security shielding against spam and threat payloads.'
+      'Protects inbox bodies and attachments using secure Elliptic Curve at-rest encryption.',
+      'Ensures subjects and metadata indexes are stored encrypted, preventing database leaks.',
+      'Secures login sessions with advanced Argon2/BCrypt hashing and isolated app-specific passwords.'
     ],
     results: [
-      'Delivered 99.999% uptime SLA continuously over 12 months.',
-      'Reduced average delivery latency to under 350ms globally.'
+      'Achieved 100% data confidentiality, verified by third-party storage audits.',
+      'Sustained outbound deliverability rates at 99.99% using standard DKIM/SPF alignment.'
     ],
-    price: 'Starting from ₹599 / unit / month',
+    price: 'Starting from ₹49 / user / month',
     price_detail_html: SAMPLE_PRICING_TABLE_HTML
   },
   '99902': {
@@ -121,7 +126,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
     metricLabel: 'Milk Distributed',
     icon: Database,
     tech: ['React Native', 'Django', 'PostgreSQL', 'Google Maps API', 'Redis'],
-    image: atlasMockup,
+    image: pench,
     file: 'pench-milk-system.py',
     longDesc: 'The Pench Milk Delivery System digitizes the distribution chain of fresh milk from farms to households. We built an offline-first mobile app for delivery agents, backed by a robust Django engine that handles daily route calculations based on geography, driver capacity, and current traffic conditions. An integrated customer portal allows flexible subscription management and instant notifications.',
     benefits: [
@@ -213,7 +218,7 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
     metricLabel: 'Vector Resolution',
     icon: Cpu,
     tech: ['Vite', 'React', 'Node.js', 'Vector DB', 'Rust'],
-    image: pench,
+    image: cognitiveMockup,
     file: 'cognitive-query-api.sh',
     longDesc: 'Cognitive Query API delivers high-frequency semantic index updates to core search backends. Built around an optimized vector distance engine running near the client edge, search inputs yield conceptual matching results within fraction of a millisecond. Perfect for enterprise catalogs and localized semantic lookups.',
     benefits: [
@@ -275,16 +280,16 @@ const STATIC_PROJECTS_FALLBACK: Record<string, Project & { id: number; longDesc?
   },
   '99909': {
     id: 99909,
-    title: 'Campus Flow',
+    title: 'Campus Nexus',
     category: 'polynexus',
     desc: 'College & School management system managing member directory, student/teacher attendance, lecture schedules, and grading.',
     metric: '99.8%',
     metricLabel: 'Attendance Accuracy',
     icon: Globe,
     tech: ['Django', 'React', 'PostgreSQL', 'Tailwind CSS', 'Docker'],
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=400&h=250',
-    file: 'campus-flow-directory.sh',
-    longDesc: 'Campus Flow is a comprehensive management platform designed for universities and schools. It unifies high-capacity student registries with automated staff attendance verification, daily lecture timetabling, and direct communication relays. By building a fast edge-indexed registry database, administrative workloads and student query latencies have been significantly minimized.',
+    image: campusScreenshot,
+    file: 'campus-nexus-directory.sh',
+    longDesc: 'Campus Nexus is a comprehensive management platform designed for universities and schools. It unifies high-capacity student registries with automated staff attendance verification, daily lecture timetabling, and direct communication relays. By building a fast edge-indexed registry database, administrative workloads and student query latencies have been significantly minimized.',
     benefits: [
       'Simplifies school operations by consolidating student, staff, and lecture data.',
       'Maintains precise daily attendance records with automated reports.',
@@ -303,12 +308,41 @@ export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   useScrollReveal();
+
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a');
+      if (anchor) {
+        const href = anchor.getAttribute('href');
+        if (href === '/#contact' || href === '#contact') {
+          e.preventDefault();
+          setIsPricingModalOpen(false);
+          navigate('/#contact');
+        }
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, [navigate]);
+
   const [project, setProject] = useState<(Project & { longDesc?: string; benefits?: string[]; results?: string[] }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [cfBilling, setCfBilling] = useState<'monthly' | 'annual'>('monthly');
   const [cfTab, setCfTab] = useState<'campus' | 'business'>('campus');
+  const [mailBilling, setMailBilling] = useState<'monthly' | 'annual'>('annual');
+  const [calcScale, setCalcScale] = useState(25);
+
+  useEffect(() => {
+    if (project) {
+      const isMilk = project.title.toLowerCase().includes('milk');
+      const isGarage = project.title.toLowerCase().includes('garage') || project.title.toLowerCase().includes('moto');
+      setCalcScale(isMilk ? 1000 : isGarage ? 5 : 25);
+    }
+  }, [project]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -388,7 +422,7 @@ export default function ProjectDetail() {
     );
   }
 
-  const renderCampusFlowPricing = (isModalView = false) => {
+  const renderCampusNexusPricing = (isModalView = false) => {
     const isAnnual = cfBilling === 'annual';
 
     return (
@@ -797,9 +831,203 @@ export default function ProjectDetail() {
     );
   };
 
+  const renderMailServicePricing = (isModalView = false) => {
+    const isAnnual = mailBilling === 'annual';
+
+    return (
+      <div className={`w-full font-sans text-primary rounded-3xl ${isModalView ? 'bg-white p-2' : 'mt-16 bg-slate-50 border border-slate-200/80 pb-12'}`}>
+        
+        {/* Header / Toggle Row */}
+        {!isModalView ? (
+          /* Landing Page section style */
+          <section className="bg-primary text-white text-center pt-12 px-6 pb-12 relative overflow-hidden select-none rounded-t-3xl">
+            <h2 className="text-2xl font-bold tracking-tight mb-2">Mail Service Pricing</h2>
+            <p className="text-sm text-slate-300 max-w-[480px] mx-auto mb-6 leading-relaxed">
+              Secure, E2EE-capable email hosting optimized via our high-reputation relay servers. Choose a plan that matches your organization's scope.
+            </p>
+            <div className="inline-flex items-center bg-white/10 rounded-full p-1 gap-1 border border-white/10">
+              <button
+                onClick={() => setMailBilling('monthly')}
+                className={`px-4 py-1.5 rounded-full border-none text-[0.8rem] font-semibold transition-all duration-200 cursor-pointer ${mailBilling === 'monthly' ? 'bg-white text-primary shadow-sm' : 'bg-transparent text-slate-300 hover:text-white'}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setMailBilling('annual')}
+                className={`px-4 py-1.5 rounded-full border-none text-[0.8rem] font-semibold transition-all duration-200 cursor-pointer flex items-center ${mailBilling === 'annual' ? 'bg-white text-primary shadow-sm' : 'bg-transparent text-slate-300 hover:text-white'}`}
+              >
+                Annual
+                <span className="bg-secondary/15 text-secondary text-[0.65rem] font-bold px-2 py-0.5 rounded-full ml-1 align-middle">
+                  Save ~17%
+                </span>
+              </button>
+            </div>
+          </section>
+        ) : (
+          /* Modal compact header style */
+          <div className="flex justify-center items-center gap-4 py-3 mb-6 bg-slate-50 border border-slate-200/60 rounded-2xl max-w-sm mx-auto select-none">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Billing Cycle:</span>
+            <div className="inline-flex items-center bg-slate-200/60 rounded-full p-0.5 gap-0.5">
+              <button
+                onClick={() => setMailBilling('monthly')}
+                className={`px-3 py-1 rounded-full border-none text-[0.72rem] font-bold transition-all duration-200 cursor-pointer ${mailBilling === 'monthly' ? 'bg-white text-primary shadow-xs' : 'bg-transparent text-slate-500 hover:text-slate-800'}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setMailBilling('annual')}
+                className={`px-3 py-1 rounded-full border-none text-[0.72rem] font-bold transition-all duration-200 cursor-pointer flex items-center ${mailBilling === 'annual' ? 'bg-white text-primary shadow-xs' : 'bg-transparent text-slate-500 hover:text-slate-800'}`}
+              >
+                Annual
+                <span className="bg-secondary/10 text-secondary text-[0.6rem] font-extrabold px-1.5 py-0.5 rounded-full ml-1 align-middle">
+                  Save ~17%
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 3-Tier Grid */}
+        <div className={`px-4 max-w-7xl mx-auto ${isModalView ? 'pt-2' : 'pt-10'}`}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+            {/* Starter Plan */}
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 transition-all duration-250 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5">
+              <div>
+                <div className="font-bold text-primary text-[0.95rem] mb-0.5 leading-tight">Starter Secure</div>
+                <div className="text-[0.7rem] text-slate-400 mb-4 leading-normal h-[32px] overflow-hidden">Basic E2EE-enabled mailbox for individuals & micro-teams</div>
+                <div className="mb-2">
+                  <span className="text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                  <span className="text-2xl font-extrabold text-primary font-sans leading-none">{isAnnual ? '49' : '59'}</span>
+                  <span className="text-[0.65rem] text-slate-450 block mt-0.5">
+                    / user / month {isAnnual && '(billed annually)'}
+                  </span>
+                </div>
+                {isAnnual ? (
+                  <div className="text-[0.65rem] text-slate-450 line-through mb-3 h-3">₹59 / user / month</div>
+                ) : (
+                  <div className="h-3 mb-3" />
+                )}
+                
+                <a href="#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2 rounded-xl text-[0.72rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                  Deploy Starter Mailbox
+                </a>
+                
+                <span className="text-[0.62rem] text-secondary bg-secondary/10 border border-secondary/15 rounded-md px-1.5 py-0.5 inline-block mb-3 font-bold font-mono">
+                  Unlimited Emails
+                </span>
+                
+                <hr className="border-none border-t border-slate-150 mb-3" />
+                
+                <ul className="list-none space-y-1.5 flex-grow">
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Unlimited inbound & outbound mail</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> 5 GB SSD storage capacity</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Elliptic Curve Storage Cryptography</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Secure Webmail dashboard client</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Inbound spam & phishing scanner</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Google Authenticator 2FA</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Pro Plan (Highlighted Card) */}
+            <div className="bg-white rounded-2xl p-5 border-2 border-secondary relative transition-all duration-250 flex flex-col justify-between hover:shadow-lg hover:-translate-y-0.5 font-sans">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-primary-foreground text-[0.6rem] font-extrabold px-2.5 py-0.5 rounded-full whitespace-nowrap tracking-wider font-mono">
+                ⭐ BEST VALUE
+              </div>
+              <div>
+                <div className="font-bold text-primary text-[0.95rem] mb-0.5 leading-tight">Pro Secure</div>
+                <div className="text-[0.7rem] text-slate-400 mb-4 leading-normal h-[32px] overflow-hidden">Custom domain secure communication suite for businesses</div>
+                <div className="mb-2">
+                  <span className="text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                  <span className="text-2xl font-extrabold text-primary font-sans leading-none">{isAnnual ? '99' : '119'}</span>
+                  <span className="text-[0.65rem] text-slate-450 block mt-0.5">
+                    / user / month {isAnnual && '(billed annually)'}
+                  </span>
+                </div>
+                {isAnnual ? (
+                  <div className="text-[0.65rem] text-slate-455 line-through mb-3 h-3">₹119 / user / month</div>
+                ) : (
+                  <div className="h-3 mb-3" />
+                )}
+                
+                <a href="#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2 rounded-xl text-[0.72rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-secondary text-primary hover:bg-[#35b399] shadow-md shadow-secondary/15">
+                  Deploy Pro Mailbox
+                </a>
+                
+                <span className="text-[0.62rem] text-secondary bg-secondary/10 border border-secondary/15 rounded-md px-1.5 py-0.5 inline-block mb-3 font-bold font-mono">
+                  Unlimited Emails
+                </span>
+                
+                <hr className="border-none border-t border-slate-150 mb-3" />
+                
+                <ul className="list-none space-y-1.5 flex-grow">
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal font-semibold"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Unlimited inbound & outbound mail</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal font-semibold"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> 25 GB SSD storage capacity</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Custom Domain Support (you@yourcompany.com)</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal font-semibold"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Encrypted Metadata Indexing (Zero DB exposure)</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal font-semibold"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> App-Specific passwords for Outlook & Mail</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> SPF / DKIM / DMARC deliverability signatures</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Shared IP high-reputation outbound relays</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Enterprise Plan */}
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 transition-all duration-250 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5">
+              <div>
+                <div className="font-bold text-primary text-[0.95rem] mb-0.5 leading-tight">Enterprise Secure</div>
+                <div className="text-[0.7rem] text-slate-400 mb-4 leading-normal h-[32px] overflow-hidden">Zero-Trust compliance and tracking for large operations</div>
+                <div className="mb-2">
+                  <span className="text-[0.95rem] font-bold align-super mr-0.5 text-primary">₹</span>
+                  <span className="text-2xl font-extrabold text-primary font-sans leading-none">{isAnnual ? '199' : '239'}</span>
+                  <span className="text-[0.65rem] text-slate-455 block mt-0.5">
+                    / user / month {isAnnual && '(billed annually)'}
+                  </span>
+                </div>
+                {isAnnual ? (
+                  <div className="text-[0.65rem] text-slate-455 line-through mb-3 h-3">₹239 / user / month</div>
+                ) : (
+                  <div className="h-3 mb-3" />
+                )}
+                
+                <a href="#contact" onClick={() => isModalView && setIsPricingModalOpen(false)} className="block w-full py-2 rounded-xl text-[0.72rem] font-bold text-center no-underline transition-all duration-200 mb-4 cursor-pointer bg-white text-primary border border-primary hover:bg-slate-50">
+                  Contact Sales & Custom Config
+                </a>
+                
+                <span className="text-[0.62rem] text-secondary bg-secondary/10 border border-secondary/15 rounded-md px-1.5 py-0.5 inline-block mb-3 font-bold font-mono">
+                  Unlimited Emails
+                </span>
+                
+                <hr className="border-none border-t border-slate-150 mb-3" />
+                
+                <ul className="list-none space-y-1.5 flex-grow">
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Unlimited inbound & outbound mail</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> 100 GB SSD storage capacity</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Everything in Pro Plan +</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal font-semibold"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Event audits & query logs</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal font-semibold"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Archiving & regulatory backup controls</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Dedicated high-reputation outbound IP request</li>
+                  <li className="text-[0.7rem] text-slate-650 flex items-start gap-1 leading-normal"><Check className="w-3.5 h-3.5 text-secondary flex-shrink-0 mt-0.5" /> Dedicated 24/7 technical representative</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footnote (only on full landing page section) */}
+        {!isModalView && (
+          <div className="text-center text-[0.75rem] text-slate-400 px-6 py-6 pb-12 mt-4 max-w-3xl mx-auto leading-normal">
+            💡 <strong>Proprietary Optimized Delivery Engine</strong>: By routing transactional and client traffic through our custom high-reputation outbound relays, we achieve optimal deliverability at a fraction of standard hosting infrastructure costs. To maintain high profit margins at scale, plans feature unlimited email sending/receiving subject to standard daily anti-abuse limits (comparable to industry-standard business mail thresholds). Volume extensions or customized SMTP relay terms can be arranged upon inquiry.
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Get project icon component
   const ProjIcon = project.icon || Cpu;
-  const isCampusFlow = project.title.toLowerCase().includes('campus flow');
+  const isCampusNexus = project.title.toLowerCase().includes('campus nexus');
+  const isMailService = project.id === 99901 || project.title.toLowerCase().includes('mail');
 
   return (
     <div className="min-h-screen bg-slate-50 text-[#010B33] selection:bg-[#45C7AC]/30 selection:text-[#010B33] font-sans antialiased">
@@ -826,9 +1054,13 @@ export default function ProjectDetail() {
         {/* Project Header section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16">
           <div className="lg:col-span-8">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-accent bg-accent/10 uppercase tracking-wider font-mono mb-4">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-mono mb-4 border ${
+              project.category === 'polynexus'
+                ? 'text-secondary bg-secondary/10 border-secondary/15'
+                : 'text-amber-700 bg-amber-500/10 border-amber-500/15'
+            }`}>
               <ProjIcon className="w-3.5 h-3.5" />
-              {project.category === 'polynexus' ? 'Polynexus Product' : project.category === 'custom' ? 'Custom Software' : project.category}
+              {project.category === 'polynexus' ? 'Polynexus Product' : 'Custom Software'}
             </span>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight tracking-tight">
               {project.title}
@@ -887,6 +1119,76 @@ export default function ProjectDetail() {
                 </p>
               </div>
             </section>
+
+            {/* If Mail Service, show the 6 specialties in a gorgeous high-tech grid */}
+            {isMailService && (
+              <section className="bg-white border border-slate-200/80 rounded-3xl p-8 shadow-sm">
+                <div className="flex items-center gap-2 mb-6">
+                  <Shield className="w-5 h-5 text-secondary animate-pulse" />
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">Security & Privacy Architecture</h2>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Zero-Knowledge Secure Protocols</span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      num: '01',
+                      icon: Lock,
+                      title: 'Military-Grade Storage Encryption (At-Rest)',
+                      copy: 'Your emails belong to you, and only you. Every single email body and attachment is encrypted using secure Elliptic Curve cryptography before it is written to disk. Even in the event of a physical server compromise or server drive theft, your data remains completely unreadable.'
+                    },
+                    {
+                      num: '02',
+                      icon: Shield,
+                      title: 'Encrypted Metadata Indexing (Zero Database Exposure)',
+                      copy: 'Standard email providers store search indexes (like subject lines and body previews) in plaintext databases. We encrypt all indexing metadata at the database level, ensuring your private email subjects and snippets are never exposed in plaintext.'
+                    },
+                    {
+                      num: '03',
+                      icon: Key,
+                      title: 'State-of-the-Art Password Protection',
+                      copy: 'We secure your primary login credentials using the industry\'s most advanced password hashing algorithms. Our authentication system is designed to withstand high-powered, hardware-accelerated offline attacks, keeping your password safe.'
+                    },
+                    {
+                      num: '04',
+                      icon: Fingerprint,
+                      title: 'Two-Factor Authentication (2FA) & App-Specific Passwords',
+                      copy: 'Add a second layer of defense with Google Authenticator or any standard 2FA app. Once enabled, you can generate isolated, single-device passwords for your third-party mail clients (like Outlook or Mail). Revoke access for any device instantly without changing your main password.'
+                    },
+                    {
+                      num: '05',
+                      icon: Globe,
+                      title: 'Mandatory In-Transit TLS Encryption',
+                      copy: 'Your data in motion is fully protected. We enforce secure, end-to-end encrypted TLS channels for all incoming and outgoing connections—whether you are using our web dashboard, mobile apps, or sending an email. This prevents eavesdropping on public Wi-Fi or networks.'
+                    },
+                    {
+                      num: '06',
+                      icon: Mail,
+                      title: 'Enterprise Deliverability & Anti-Spam Shield',
+                      copy: 'Keep your inbox clean and guarantee your outbound mail gets delivered. We cryptographically sign outgoing mail with standard domain alignment records to maximize delivery to Gmail, Outlook, and others. Inbound emails are instantly filtered to block spam, phishing, and malware.'
+                    }
+                  ].map((specialty, idx) => {
+                    const SpecIcon = specialty.icon;
+                    return (
+                      <div key={idx} className="p-5 bg-slate-50 hover:bg-white border border-slate-150 hover:border-[#45C7AC]/35 rounded-2xl transition-all duration-300 group/item hover:shadow-md">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-[10px] font-bold text-slate-400 font-mono group-hover/item:text-secondary transition-colors">{specialty.num}</span>
+                          <SpecIcon className="w-4 h-4 text-slate-400 group-hover/item:text-secondary transition-colors" />
+                        </div>
+                        <h3 className="text-xs font-bold text-slate-800 group-hover/item:text-secondary transition-colors leading-tight mb-2">
+                          {specialty.title}
+                        </h3>
+                        <p className="text-slate-500 text-[11px] leading-relaxed font-normal">
+                          {specialty.copy}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             {/* Benefits Section */}
             <section className="bg-white border border-slate-200/80 rounded-3xl p-8 shadow-sm">
@@ -968,7 +1270,7 @@ export default function ProjectDetail() {
                   Choose the edition that fits your scale. Active subscription plans include standard or priority technical support.
                 </p>
                 <div className="space-y-3 mb-8">
-                  {isCampusFlow ? (
+                  {isCampusNexus ? (
                     <>
                       <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
                         <span>🎓 Campus Solutions</span>
@@ -979,15 +1281,30 @@ export default function ProjectDetail() {
                         <span className="text-slate-900 font-mono font-bold">from ₹166/mo</span>
                       </div>
                     </>
+                  ) : isMailService ? (
+                    <>
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                        <span>Starter Plan</span>
+                        <span className="text-primary font-mono font-bold">₹49/mo</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700 font-semibold">
+                        <span>Pro Plan</span>
+                        <span className="text-primary font-mono font-bold">₹99/mo</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                        <span>Enterprise Plan</span>
+                        <span className="text-primary font-mono font-bold">₹199/mo</span>
+                      </div>
+                    </>
                   ) : (
                     <>
                       <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
                         <span>Standard Edition</span>
-                        <span className="text-primary font-mono font-bold">₹1249/mo</span>
+                        <span className="text-primary font-mono font-bold">₹{project.standard_price || '1249'}/mo</span>
                       </div>
                       <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
                         <span>Premium Edition</span>
-                        <span className="text-primary font-mono font-bold">₹2999/mo</span>
+                        <span className="text-primary font-mono font-bold">₹{project.premium_price || '2999'}/mo</span>
                       </div>
                       <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
                         <span>Enterprise Edition</span>
@@ -1027,8 +1344,8 @@ export default function ProjectDetail() {
         </div>
 
         {/* 3-Tier Pricing Section */}
-        {project.category === 'polynexus' && (
-          isCampusFlow ? renderCampusFlowPricing(false) : (
+        {project.category === 'polynexus' ? (
+          isCampusNexus ? renderCampusNexusPricing(false) : isMailService ? renderMailServicePricing(false) : (
             <div className="mt-16 pt-16 border-t border-slate-200/80 reveal">
               {/* Header + Country Selector */}
               <div className="flex flex-col sm:flex-row justify-between items-center max-w-6xl mx-auto mb-10 px-4 gap-4">
@@ -1195,7 +1512,100 @@ export default function ProjectDetail() {
 
             </div>
           )
-        )}
+        ) : (() => {
+          const isMilk = project.title.toLowerCase().includes('milk');
+          const isGarage = project.title.toLowerCase().includes('garage') || project.title.toLowerCase().includes('moto');
+          
+          const minVal = isMilk ? 100 : isGarage ? 1 : 5;
+          const maxVal = isMilk ? 10000 : isGarage ? 50 : 250;
+          const stepVal = isMilk ? 100 : isGarage ? 1 : 5;
+          
+          let calcLabel = 'Active User Seats';
+          let calcRate = 499;
+          let calcUnit = 'seat';
+
+          if (isMilk) {
+            calcLabel = 'Daily Milk Distribution Volume';
+            calcRate = 12; // ₹12 per liter
+            calcUnit = 'liter';
+          } else if (isGarage) {
+            calcLabel = 'Active Mechanic / Service Bays';
+            calcRate = 299;
+            calcUnit = 'bay';
+          }
+
+          return (
+            <div className="mt-16 pt-16 border-t border-slate-200/80 reveal">
+              <div className="text-center max-w-2xl mx-auto mb-10">
+                <span className="text-sm font-bold text-accent uppercase tracking-wider font-mono">Dynamic Cost Estimator</span>
+                <h2 className="text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">Interactive deployment calculator</h2>
+                <p className="text-slate-500 text-xs mt-3 leading-relaxed">
+                  Estimate the custom implementation, license, or support cost for <span className="font-bold text-slate-800">{project.title}</span>. Drag the slider to set your required scale.
+                </p>
+              </div>
+
+              <div className="max-w-3xl mx-auto bg-white border border-slate-200/80 rounded-3xl p-8 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[6px] bg-accent" />
+                
+                <div className="space-y-8">
+                  {/* Range Slider */}
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-xs font-bold text-slate-450 uppercase tracking-wider font-mono">{calcLabel}</span>
+                      <span className="text-lg font-bold text-slate-900 font-mono">{calcScale.toLocaleString()} {calcUnit}s</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={minVal}
+                      max={maxVal}
+                      step={stepVal}
+                      value={calcScale}
+                      onChange={(e) => setCalcScale(parseInt(e.target.value) || minVal)}
+                      className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-accent border border-slate-200"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-450 font-bold font-mono mt-2 select-none">
+                      <span>{minVal.toLocaleString()}</span>
+                      <span>{((minVal + maxVal) / 2).toLocaleString()}</span>
+                      <span>{maxVal.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-150" />
+
+                  {/* Estimate Result */}
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest font-mono block mb-1">ESTIMATED DEPLOYMENT COST</span>
+                      <div className="flex items-baseline text-slate-900 tracking-tight font-sans">
+                        <span className="text-2xl font-bold mr-0.5">₹</span>
+                        <span className="text-5xl font-extrabold font-mono tracking-tighter">
+                          {Math.round(calcScale * calcRate).toLocaleString()}
+                        </span>
+                        <span className="text-slate-500 text-xs font-bold font-mono ml-2 font-semibold">/ month</span>
+                      </div>
+                      <span className="text-[9px] text-slate-450 block mt-1 font-medium italic">* Subject to custom developer modifications & local SLA agreements</span>
+                    </div>
+
+                    <a
+                      href="/#contact"
+                      onClick={(e) => {
+                        localStorage.setItem('inquiry_prefix', `I am interested in custom deploying ${project.title} for approximately ${calcScale.toLocaleString()} active ${calcUnit}s (estimated cost: ₹${Math.round(calcScale * calcRate).toLocaleString()}/month). Please get in touch.`);
+                        const element = document.getElementById('contact');
+                        if (element) {
+                          e.preventDefault();
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                      className="bg-accent hover:bg-[#c15e00] text-white font-extrabold text-xs px-6 py-4 rounded-xl shadow-md shadow-accent/15 transition-all duration-200 hover:-translate-y-0.5 whitespace-nowrap cursor-pointer"
+                    >
+                      Request Quote for this scale
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
       </main>
 
@@ -1235,7 +1645,7 @@ export default function ProjectDetail() {
             {/* Content Viewport */}
             <div className="p-6 overflow-y-auto flex-grow">
               {project.category === 'polynexus' ? (
-                isCampusFlow ? renderCampusFlowPricing(true) : (
+                isCampusNexus ? renderCampusNexusPricing(true) : isMailService ? renderMailServicePricing(true) : (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto font-sans">
 
                     {/* Joined Container: Standard & Premium */}
@@ -1416,12 +1826,7 @@ export default function ProjectDetail() {
               <button
                 onClick={() => {
                   setIsPricingModalOpen(false);
-                  const contactEl = document.getElementById('contact');
-                  if (contactEl) {
-                    contactEl.scrollIntoView({ behavior: 'smooth' });
-                  } else {
-                    window.location.href = '/#contact';
-                  }
+                  navigate('/#contact');
                 }}
                 className="bg-secondary hover:bg-[#35b399] text-primary font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer"
               >

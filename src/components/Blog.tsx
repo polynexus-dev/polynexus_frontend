@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Calendar, Clock, ArrowUpRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { fetchBlogPosts, type BlogPost } from '../api';
 
 export default function Blog() {
@@ -118,13 +119,13 @@ export default function Blog() {
 
               {/* Action */}
               <div className="p-6 pt-0 mt-4">
-                <a
-                  href="#contact"
+                <Link
+                  to="/#contact"
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-secondary hover:text-slate-800 transition-colors duration-200"
                 >
                   Read Engineering Log
                   <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
+                </Link>
               </div>
 
             </article>

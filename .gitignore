@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 .env
 docker-compose.yml
+
+# Scratch files
+*.xlsx
+~$*
+test.py

@@ -16,6 +16,20 @@ export default function ContactForm() {
       .catch((err) => console.error('Error fetching contact info:', err));
   }, []);
   const [formData, setFormData] = useState({ name: '', email: '', company: '', message: '' });
+
+  useEffect(() => {
+    const prefix = localStorage.getItem('inquiry_prefix');
+    if (prefix) {
+      setFormData(prev => ({ ...prev, message: prefix }));
+      localStorage.removeItem('inquiry_prefix');
+      setTimeout(() => {
+        const contactEl = document.getElementById('contact');
+        if (contactEl) {
+          contactEl.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300);
+    }
+  }, []);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);

@@ -24,7 +24,7 @@ import {
 import type { Service, Project, Testimonial, FAQItem, BlogPost, ContactInfo, HeroInfo, Enquiry } from '../api';
 import { 
   Lock, User, LogOut, Plus, Edit2, Trash2, X, Info, 
-  Zap, Database, Shield, Layers, Cpu, Globe, FolderGit, 
+  Zap, Layers, Cpu, 
   HelpCircle, Settings, FileText, Star, ArrowLeft, Mail
 } from 'lucide-react';
 
@@ -37,6 +37,29 @@ export default function AdminDashboard() {
   const [loginPass, setLoginPass] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+
+  // Custom Toast State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+  };
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  // Custom Confirm Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+  const triggerConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmModal({ isOpen: true, title, message, onConfirm });
+  };
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<'services' | 'projects' | 'testimonials' | 'faqs' | 'blog' | 'contact' | 'hero' | 'enquiries'>('services');
@@ -150,24 +173,30 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteEnquiry = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this enquiry?')) return;
-    try {
-      await deleteEnquiry(id);
-      const res = await fetchEnquiries();
-      setEnquiries(res);
-      if (replyingId === id) {
-        setReplyingId(null);
-        setReplyText('');
+  const handleDeleteEnquiry = (id: number) => {
+    triggerConfirm(
+      'Delete Enquiry',
+      'Are you sure you want to permanently delete this user contact enquiry? This action cannot be undone.',
+      async () => {
+        try {
+          await deleteEnquiry(id);
+          const res = await fetchEnquiries();
+          setEnquiries(res);
+          if (replyingId === id) {
+            setReplyingId(null);
+            setReplyText('');
+          }
+          showToast('Enquiry deleted successfully', 'success');
+        } catch (err: any) {
+          showToast(err.message || 'Failed to delete enquiry', 'error');
+        }
       }
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete enquiry');
-    }
+    );
   };
 
   const handleReplyEnquiry = async (id: number) => {
     if (!replyText.trim()) {
-      alert('Reply message cannot be empty');
+      showToast('Reply message cannot be empty', 'error');
       return;
     }
     try {
@@ -176,9 +205,9 @@ export default function AdminDashboard() {
       setReplyingId(null);
       const res = await fetchEnquiries();
       setEnquiries(res);
-      alert('Reply saved and simulated dispatch logged successfully!');
+      showToast('Reply saved and simulated dispatch logged!', 'success');
     } catch (err: any) {
-      alert(err.message || 'Failed to send reply');
+      showToast(err.message || 'Failed to send reply', 'error');
     }
   };
 
@@ -312,24 +341,30 @@ export default function AdminDashboard() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: any) => {
-    if (!confirm('Are you sure you want to delete this record?')) return;
-    try {
-      if (activeTab === 'services') {
-        await deleteService(id);
-      } else if (activeTab === 'projects') {
-        await deleteProject(id);
-      } else if (activeTab === 'testimonials') {
-        await deleteTestimonial(id);
-      } else if (activeTab === 'faqs') {
-        await deleteFAQ(id);
-      } else if (activeTab === 'blog') {
-        await deleteBlogPost(id);
+  const handleDelete = (id: any) => {
+    triggerConfirm(
+      'Delete Record',
+      'Are you sure you want to permanently delete this database record? This action cannot be undone.',
+      async () => {
+        try {
+          if (activeTab === 'services') {
+            await deleteService(id);
+          } else if (activeTab === 'projects') {
+            await deleteProject(id);
+          } else if (activeTab === 'testimonials') {
+            await deleteTestimonial(id);
+          } else if (activeTab === 'faqs') {
+            await deleteFAQ(id);
+          } else if (activeTab === 'blog') {
+            await deleteBlogPost(id);
+          }
+          showToast('Record deleted successfully', 'success');
+          loadTabData();
+        } catch (err: any) {
+          showToast(err.message || 'Deletion failed', 'error');
+        }
       }
-      loadTabData();
-    } catch (err: any) {
-      alert(err.message || 'Deletion failed');
-    }
+    );
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -343,7 +378,7 @@ export default function AdminDashboard() {
           icon: serviceIcon,
           // filter empty specification fields
           specs: Object.fromEntries(
-            Object.entries(serviceForm.specs).filter(([k, v]) => k.trim() !== '')
+            Object.entries(serviceForm.specs).filter(([k]) => k.trim() !== '')
           )
         };
         if (modalMode === 'create') {
@@ -393,6 +428,7 @@ export default function AdminDashboard() {
       
       setIsModalOpen(false);
       loadTabData();
+      showToast('Record saved successfully!', 'success');
     } catch (err: any) {
       setSaveError(err.message || 'Saving failed');
     } finally {
@@ -1632,11 +1668,31 @@ export default function AdminDashboard() {
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setProjectForm(prev => ({ ...prev, image: reader.result as string }));
+                            const img = new Image();
+                            img.src = URL.createObjectURL(file);
+                            img.onload = () => {
+                              const canvas = document.createElement('canvas');
+                              const max_width = 1280;
+                              let width = img.width;
+                              let height = img.height;
+                              
+                              if (width > max_width) {
+                                height = Math.round((height * max_width) / width);
+                                width = max_width;
+                              }
+                              
+                              canvas.width = width;
+                              canvas.height = height;
+                              
+                              const ctx = canvas.getContext('2d');
+                              if (ctx) {
+                                ctx.drawImage(img, 0, 0, width, height);
+                                const compressedDataUrl = canvas.toDataURL('image/webp', 0.75);
+                                setProjectForm(prev => ({ ...prev, image: compressedDataUrl }));
+                                showToast('Image compressed to WebP successfully!', 'info');
+                              }
+                              URL.revokeObjectURL(img.src);
                             };
-                            reader.readAsDataURL(file);
                           }
                         }}
                         className="w-full bg-[#010620]/65 border border-slate-800 text-white rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-secondary font-mono"
@@ -2191,6 +2247,51 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-[9999] animate-in fade-in slide-in-from-top-5 duration-300">
+          <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border backdrop-blur-md shadow-2xl ${
+            toast.type === 'success' 
+              ? 'bg-secondary/10 border-secondary/30 text-secondary' 
+              : toast.type === 'error' 
+              ? 'bg-red-500/10 border-red-500/30 text-red-400' 
+              : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
+          }`}>
+            <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+            <span className="text-xs font-bold font-mono tracking-tight text-white">{toast.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[9999] bg-[#010620]/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#010b33] border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <h4 className="text-sm font-extrabold text-white uppercase tracking-wider mb-2">{confirmModal.title}</h4>
+            <p className="text-xs text-slate-400 leading-relaxed mb-6">{confirmModal.message}</p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-350 text-[10px] font-bold px-4 py-2 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  confirmModal.onConfirm();
+                  setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                }}
+                className="bg-red-500 hover:bg-red-650 text-white text-[10px] font-bold px-4 py-2 rounded-xl transition-colors cursor-pointer"
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       )}

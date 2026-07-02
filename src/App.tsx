@@ -1,8 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Services from './components/Services'
-
 import Projects from './components/Projects'
 import Testimonials from './components/Testimonials'
 import FAQ from './components/FAQ'
@@ -12,8 +12,36 @@ import Footer from './components/Footer'
 import AdminDashboard from './components/AdminDashboard'
 import ProjectDetail from './components/ProjectDetail'
 import CampusNexus from './components/CampusNexus'
+import PolyMX from './components/PolyMX'
+import Logistics from './components/Logistics'
+import CustomSolutions from './components/CustomSolutions'
+import About from './components/About'
+import TrustedBy from './components/TrustedBy'
+import TechStack from './components/TechStack'
+import HowWeWork from './components/HowWeWork'
 import useScrollReveal from './hooks/useScrollReveal'
 import './App.css'
+
+function ScrollToHashElement() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        const timer = setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  }, [pathname, hash]);
+
+  return null;
+}
 
 function ClientLayout() {
   useScrollReveal();
@@ -36,9 +64,11 @@ function ClientLayout() {
 
       <main>
         <Hero />
+        <TrustedBy />
         <Services />
-
+        <HowWeWork />
         <Projects />
+        <TechStack />
         <Testimonials />
         <FAQ />
         <Blog />
@@ -52,11 +82,16 @@ function ClientLayout() {
 function App() {
   return (
     <Router>
+      <ScrollToHashElement />
       <Routes>
         <Route path="/" element={<ClientLayout />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/project/:id" element={<ProjectDetail />} />
         <Route path="/campusnexus" element={<CampusNexus />} />
+        <Route path="/polymx" element={<PolyMX />} />
+        <Route path="/logistics" element={<Logistics />} />
+        <Route path="/custom" element={<CustomSolutions />} />
+        <Route path="/about" element={<About />} />
       </Routes>
     </Router>
   );
