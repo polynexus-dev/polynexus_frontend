@@ -180,13 +180,15 @@ export default function Header() {
 
           {/* ── Desktop CTA ── */}
           <div className="hidden lg:block flex-shrink-0">
-            <Link
-              to="/#contact"
+            <a
+              href="https://campusnexus.in/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 bg-secondary text-primary hover:bg-[#35b399] font-bold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 shadow-md shadow-secondary/20 whitespace-nowrap"
             >
               Get Started
               <ArrowUpRight className="w-4 h-4" />
-            </Link>
+            </a>
           </div>
 
           {/* ── Mobile Hamburger ── */}
@@ -256,14 +258,16 @@ export default function Header() {
 
             {/* CTA */}
             <div className="mt-3 pt-4 border-t border-slate-100">
-              <Link
-                to="/#contact"
+              <a
+                href="https://campusnexus.in/"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center justify-center gap-2 bg-secondary text-primary font-bold py-3.5 rounded-xl text-sm shadow-md shadow-secondary/20 hover:bg-[#35b399] transition-colors"
               >
                 Get Started
                 <ArrowUpRight className="w-4 h-4" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>
